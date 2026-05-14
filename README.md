@@ -1,4 +1,6 @@
-# Quiz Web App
+# Quiz Web App - EWOC
+
+This Quiz regards the **EWOC** version. Questions are altered and mechanisms to facilitate a 'non orrect answer' logic to follow the quest needs.
 
 A responsive, interactive quiz application with question randomization, score tracking, and automatic result submission to Google Sheets.
 
