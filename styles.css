@@ -22,14 +22,21 @@
     font-family: 'Outfit', sans-serif;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    min-height: 100vh;
+    min-height: 100%;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 16px;
     position: relative;
 }
 
@@ -87,10 +94,15 @@ body {
     }
 }
 
-/* Glass UI Container */
+/* Glass card: never taller than viewport — scroll inside when content is long */
 .container {
     width: 90%;
     max-width: 600px;
+    max-height: calc(100dvh - 24px);
+    max-height: calc(100vh - 24px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     background: var(--surface-color);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--surface-border);
@@ -102,6 +114,15 @@ body {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: rgba(48, 54, 61, 0.75);
+    border-radius: 6px;
+}
+
 .view {
     display: none;
     opacity: 0;
@@ -111,6 +132,7 @@ body {
 .view.active {
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -330,7 +352,7 @@ h2#question-text {
     background: rgba(88, 166, 255, 0.12);
 }
 
-#quizScreen .options-grid .option-btn:disabled:not(.single-picked) {
+#quizScreen .options-grid .option-btn:disabled:not(.single-picked):not(.rank-1):not(.rank-2):not(.rank-3) {
     opacity: 0.42;
 }
 
@@ -370,18 +392,45 @@ h2#question-text {
     font-weight: 500;
 }
 
-.option-btn.rank-1,
-.option-btn.rank-2,
-.option-btn.rank-3 {
+#quizScreen .option-btn.rank-1,
+#quizScreen .option-btn.rank-2,
+#quizScreen .option-btn.rank-3 {
     position: relative;
-    padding-left: 48px;
+    /* Room for numbered badge — must not be overridden by #quizScreen .option-btn shorthand */
+    padding-left: max(3rem, 48px);
+    padding-right: 1rem;
 }
 
-.option-btn.rank-1::before,
-.option-btn.rank-2::before,
-.option-btn.rank-3::before {
+/* Full-row tint by priority (1st = gold, 2nd = blue, 3rd = silver) */
+#quizScreen .option-btn.rank-1 {
+    background: rgba(210, 153, 34, 0.16);
+    border-color: rgba(210, 153, 34, 0.55);
+    box-shadow: 0 0 0 1px rgba(210, 153, 34, 0.2);
+}
+
+#quizScreen .option-btn.rank-2 {
+    background: rgba(88, 166, 255, 0.14);
+    border-color: rgba(88, 166, 255, 0.5);
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.18);
+}
+
+#quizScreen .option-btn.rank-3 {
+    background: rgba(139, 148, 158, 0.16);
+    border-color: rgba(139, 148, 158, 0.48);
+    box-shadow: 0 0 0 1px rgba(139, 148, 158, 0.2);
+}
+
+#quizScreen .option-btn.rank-1:disabled,
+#quizScreen .option-btn.rank-2:disabled,
+#quizScreen .option-btn.rank-3:disabled {
+    opacity: 1;
+}
+
+#quizScreen .option-btn.rank-1::before,
+#quizScreen .option-btn.rank-2::before,
+#quizScreen .option-btn.rank-3::before {
     position: absolute;
-    left: 14px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     width: 26px;
@@ -392,21 +441,22 @@ h2#question-text {
     justify-content: center;
     font-size: 0.85rem;
     font-weight: 800;
+    flex-shrink: 0;
 }
 
-.option-btn.rank-1::before {
+#quizScreen .option-btn.rank-1::before {
     content: '1';
     background: rgba(210, 153, 34, 0.25);
     color: #e3b341;
 }
 
-.option-btn.rank-2::before {
+#quizScreen .option-btn.rank-2::before {
     content: '2';
     background: rgba(88, 166, 255, 0.2);
     color: #79c0ff;
 }
 
-.option-btn.rank-3::before {
+#quizScreen .option-btn.rank-3::before {
     content: '3';
     background: rgba(139, 148, 158, 0.25);
     color: #b1bac4;
@@ -588,10 +638,87 @@ h2#question-text {
     border-radius: 3px;
 }
 
+/* Short viewports (Nest Hub, phones landscape, small kiosks): tighter quiz + visible scroll */
+@media (max-height: 720px) {
+    .container {
+        padding: 14px 16px;
+        border-radius: 18px;
+        max-height: calc(100dvh - 12px);
+        max-height: calc(100vh - 12px);
+    }
+
+    #quizScreen .quiz-header {
+        margin-bottom: 10px;
+    }
+
+    #quizScreen .question-container {
+        margin-bottom: 10px;
+        min-height: 0;
+    }
+
+    #quizScreen h2#question-text {
+        font-size: 1.15rem;
+        line-height: 1.35;
+        margin-bottom: 8px;
+    }
+
+    #quizScreen .options-grid {
+        gap: 8px;
+    }
+
+    #quizScreen .option-btn:not(.rank-1):not(.rank-2):not(.rank-3) {
+        padding: 10px 12px;
+        font-size: 0.92rem;
+        line-height: 1.3;
+        align-items: flex-start;
+    }
+
+    #quizScreen .option-btn.rank-1,
+    #quizScreen .option-btn.rank-2,
+    #quizScreen .option-btn.rank-3 {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-right: 12px;
+        padding-left: max(3rem, 48px);
+        font-size: 0.92rem;
+        line-height: 1.3;
+        align-items: flex-start;
+    }
+
+    #quizScreen .rank-footer {
+        margin-top: 8px;
+    }
+
+    #quizScreen .rank-hint {
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+
+    #quizScreen .free-text-panel {
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    #quizScreen .feedback-box {
+        margin-top: 10px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Wide but short (e.g. 1024×600): keep tablet width, still compact type */
+@media (min-width: 601px) and (max-width: 2000px) and (max-height: 699px) {
+    .container {
+        max-width: min(800px, 94vw);
+        width: 92%;
+        padding: 14px 18px;
+    }
+}
+
 /* Responsive Design */
 
 /* Tablet Styles - for devices like Galaxy Tab S10 Ultra (601px - 2000px) */
-@media (min-width: 601px) and (max-width: 2000px) {
+@media (min-width: 601px) and (max-width: 2000px) and (min-height: 700px) {
     .container {
         max-width: 800px;
         padding: 50px;
