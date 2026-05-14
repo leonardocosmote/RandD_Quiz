@@ -21,365 +21,463 @@ function getSheet() {
   if (SHEET_ID) {
     return SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
   }
-  return SpreadsheetApp.getActiveSheet();
+  return SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 }
 
-// Initialize sheet headers if needed
+/** Map header label -> column index (0-based) */
+function headerIndexMap(headers) {
+  var map = {};
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i]) map[String(headers[i]).trim()] = i;
+  }
+  return map;
+}
+
+/** Pull optional gender (Q11) into one cell for analysis — in addition to full Answers JSON. */
+function extractGenderResponse(answers) {
+  if (!answers || !answers.length) return "";
+  for (var i = 0; i < answers.length; i++) {
+    var a = answers[i];
+    if (!a) continue;
+    var qid = a.questionId;
+    if (qid === 11 || qid === "11") {
+      if (a.type === "single" && a.selectedLabel) {
+        var line = String(a.selectedLabel).trim();
+        if (a.freeText) line += " — " + String(a.freeText).trim();
+        return line;
+      }
+    }
+  }
+  return "";
+}
+
+// Initialize sheet headers if needed (no scoring — poll columns + dedicated gender field)
 function initializeSheet() {
-  const sheet = getSheet();
-  let firstRow = null;
-  
+  var sheet = getSheet();
+  var firstRow = null;
+
   if (sheet.getLastColumn() > 0) {
     firstRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   }
-  
-  // Check if headers already exist
-  if (!firstRow || firstRow[0] !== "Timestamp") {
-    // Clear existing data if any
+
+  if (!firstRow || String(firstRow[0]).trim() !== "Timestamp") {
     if (sheet.getLastRow() > 0) {
       sheet.deleteRows(1, sheet.getLastRow());
     }
-    
-    // Add headers
-    const headers = [
+
+    var headers = [
       "Timestamp",
+      "Project ID",
       "User Name",
-      "Score",
-      "Total Questions",
+      "Gender response",
+      "Answered Count",
+      "Poll Total",
       "Completed",
-      "Percentage",
-      "Answers JSON"
+      "Answers JSON",
     ];
-    
+
     sheet.appendRow(headers);
-    
-    // Format header row
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange.setBackground("#667eea");
+    var headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setBackground("#4462a2");
     headerRange.setFontColor("white");
     headerRange.setFontWeight("bold");
-    
-    // Auto-resize columns
     sheet.autoResizeColumns(1, headers.length);
   }
+}
+
+function isNewPollHeaders(headers) {
+  return headers.indexOf("Poll Total") !== -1 && headers.indexOf("Project ID") !== -1;
+}
+
+function isLegacyQuizHeaders(headers) {
+  return headers.indexOf("Score") !== -1 && headers.indexOf("Total Questions") !== -1;
 }
 
 // Main doPost function - receives data from the quiz app
 function doPost(e) {
   try {
-    // Parse the request body
-    const data = JSON.parse(e.postData.contents);
-    
-    // Initialize sheet on first use
-    const sheet = getSheet();
+    var data = JSON.parse(e.postData.contents);
+    var sheet = getSheet();
+
     if (sheet.getLastRow() === 0) {
       initializeSheet();
     }
-    
-    // Prepare row data
-    // Store timestamp as Date object so Google Sheets recognizes it as a date
-    const timestamp = new Date();
-    const userName = data.userName || "Anonymous";
-    const score = data.score || 0;
-    const totalQuestions = data.totalQuestions || 0;
-    const percentage = data.percentage || 0;
-    const completed = data.completed !== undefined ? data.completed : true; // Default to true for backward compatibility
-    const answersJSON = JSON.stringify(data.answers || []);
-    
-    // Append data to sheet
-    sheet.appendRow([
-      timestamp,
-      userName,
-      score,
-      totalQuestions,
-      completed ? "Yes" : "No",
-      percentage,
-      answersJSON
-    ]);
-    
-    // Return success response
-    return ContentService
-      .createTextOutput(JSON.stringify({
+
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var timestamp = new Date();
+    var userName = data.userName || "Anonymous";
+    var answers = data.answers || [];
+    var answersJSON = JSON.stringify(answers);
+    var genderResponse = extractGenderResponse(answers);
+
+    if (isNewPollHeaders(headers)) {
+      var projectId = data.projectId || "";
+      var answeredCount =
+        data.answeredCount !== undefined && data.answeredCount !== null
+          ? Number(data.answeredCount)
+          : answers.length;
+      var pollTotal =
+        data.pollTotal !== undefined && data.pollTotal !== null
+          ? Number(data.pollTotal)
+          : answeredCount;
+      var completed = data.completed !== undefined ? data.completed : true;
+
+      sheet.appendRow([
+        timestamp,
+        projectId,
+        userName,
+        genderResponse,
+        answeredCount,
+        pollTotal,
+        completed ? "Yes" : "No",
+        answersJSON,
+      ]);
+    } else if (isLegacyQuizHeaders(headers)) {
+      var score = data.score || 0;
+      var totalQuestions = data.totalQuestions || 0;
+      var percentage = data.percentage || 0;
+      var completedLegacy = data.completed !== undefined ? data.completed : true;
+      sheet.appendRow([
+        timestamp,
+        userName,
+        score,
+        totalQuestions,
+        completedLegacy ? "Yes" : "No",
+        percentage,
+        answersJSON,
+      ]);
+    } else {
+      if (sheet.getLastRow() <= 1) {
+        sheet.clear();
+        initializeSheet();
+        headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      } else {
+        throw new Error(
+          "Unrecognized sheet headers with existing rows. Add a new tab or clear the sheet, then redeploy."
+        );
+      }
+      var projectId3 = data.projectId || "";
+      var answeredCount3 =
+        data.answeredCount !== undefined && data.answeredCount !== null
+          ? Number(data.answeredCount)
+          : answers.length;
+      var pollTotal3 =
+        data.pollTotal !== undefined && data.pollTotal !== null
+          ? Number(data.pollTotal)
+          : answeredCount3;
+      var completed3 = data.completed !== undefined ? data.completed : true;
+      sheet.appendRow([
+        timestamp,
+        projectId3,
+        userName,
+        genderResponse,
+        answeredCount3,
+        pollTotal3,
+        completed3 ? "Yes" : "No",
+        answersJSON,
+      ]);
+    }
+
+    return ContentService.createTextOutput(
+      JSON.stringify({
         result: "success",
-        message: "Quiz results saved successfully!",
-        data: {
-          userName: userName,
-          score: score,
-          timestamp: timestamp
-        }
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-      
+        message: "Poll results saved successfully!",
+        data: { userName: userName, timestamp: timestamp },
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-    // Log the error
     Logger.log("Error: " + error.toString());
-    
-    // Return error response
-    return ContentService
-      .createTextOutput(JSON.stringify({
+    return ContentService.createTextOutput(
+      JSON.stringify({
         result: "error",
         message: "Failed to save quiz results",
-        error: error.toString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+        error: error.toString(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 // For testing - can be called from the Script Editor
 function testDoPost() {
-  const testData = {
+  var testData = {
     postData: {
       contents: JSON.stringify({
+        projectId: "6G-EWOC",
         userName: "Test User",
-        score: 4,
-        totalQuestions: 5,
-        percentage: 80,
+        answeredCount: 11,
+        pollTotal: 11,
+        completed: true,
         timestamp: new Date().toISOString(),
         answers: [
-          { questionIndex: 0, selectedIndex: 2, correctIndex: 2, isCorrect: true },
-          { questionIndex: 1, selectedIndex: 1, correctIndex: 1, isCorrect: true },
-          { questionIndex: 2, selectedIndex: 3, correctIndex: 3, isCorrect: true },
-          { questionIndex: 3, selectedIndex: 0, correctIndex: 1, isCorrect: false },
-          { questionIndex: 4, selectedIndex: 2, correctIndex: 2, isCorrect: true }
-        ]
-      })
-    }
+          { questionId: 1, type: "single", selectedLabel: "Yes" },
+          {
+            questionId: 11,
+            type: "single",
+            selectedLabel: "Prefer to self-describe:",
+            freeText: "Agender",
+          },
+        ],
+      }),
+    },
   };
-  
-  const result = doPost(testData);
+
+  var result = doPost(testData);
   Logger.log(result.getContent());
 }
 
 /**
  * ADVANCED: Create a separate results sheet for analysis
  * Uncomment to use - creates formulas to summarize quiz data
+ * (Column letters assume the new poll header row: A Timestamp … H Answers JSON.)
  */
 function createAnalyticsSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let analyticsSheet = ss.getSheetByName("Analytics");
-  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var analyticsSheet = ss.getSheetByName("Analytics");
+
   if (!analyticsSheet) {
     analyticsSheet = ss.insertSheet("Analytics");
-    
-    // Get the name of the data sheet
-    const dataRef = "'" + getSheet().getName() + "'!";
-    
-    // Add summary headers
-    analyticsSheet.appendRow(["Quiz Analytics"]);
-    analyticsSheet.appendRow(["Total Submissions", `=COUNTA(${dataRef}A:A)-1`]);
-    analyticsSheet.appendRow(["Average Score", `=AVERAGE(${dataRef}C:C)`]);
-    analyticsSheet.appendRow(["Highest Score", `=MAX(${dataRef}C:C)`]);
-    analyticsSheet.appendRow(["Lowest Score", `=MIN(${dataRef}C:C)`]);
-    
-    analyticsSheet.setColumnWidth(1, 200);
-    analyticsSheet.setColumnWidth(2, 200);
+    var dataRef = "'" + getSheet().getName() + "'!";
+    analyticsSheet.appendRow(["Poll analytics (6G-EWOC-style sheet)"]);
+    analyticsSheet.appendRow(["Total submissions", "=COUNTA(" + dataRef + "A:A)-1"]);
+    analyticsSheet.appendRow(["Avg. questions answered (completed)", "=AVERAGE(" + dataRef + "E:E)"]);
+    analyticsSheet.appendRow(["Gender column (row count)", "=COUNTA(" + dataRef + "D:D)-1"]);
+    analyticsSheet.setColumnWidth(1, 280);
+    analyticsSheet.setColumnWidth(2, 120);
   }
+}
+
+function parseCompletedCell(val) {
+  if (val === null || val === undefined || val === "") return true;
+  var s = String(val).trim().toUpperCase();
+  if (s === "NO" || s === "FALSE" || s === "0" || s === "N") return false;
+  return true;
+}
+
+function rowCompletedPoll(row, col) {
+  var pollTotal = col["Poll Total"];
+  var answered = col["Answered Count"];
+  if (pollTotal === undefined || answered === undefined) return null;
+  var pt = Number(row[pollTotal]) || 0;
+  var ac = Number(row[answered]) || 0;
+  if (pt <= 0) return ac > 0;
+  return ac >= pt;
 }
 
 // --- DASHBOARD API ---
 
-// Handle GET requests to return dashboard metrics
+// Handle GET requests to return dashboard metrics (?projectId=6G-EWOC filters when that column exists)
 function doGet(e) {
   try {
-    const sheet = getSheet();
-    const dataRange = sheet.getDataRange();
-    const values = dataRange.getValues();
-    
-    // Check if we have data (more than just the header)
+    var projectFilter =
+      e && e.parameter && e.parameter.projectId ? String(e.parameter.projectId).trim() : "";
+
+    var sheet = getSheet();
+    var dataRange = sheet.getDataRange();
+    var values = dataRange.getValues();
+
     if (values.length <= 1) {
-      return ContentService
-        .createTextOutput(JSON.stringify({
+      return ContentService.createTextOutput(
+        JSON.stringify({
           result: "success",
           totalPlayers: 0,
           averageScore: 0,
-          topScores: []
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
+          completedCount: 0,
+          incompleteCount: 0,
+          averageScoreCompleted: "0",
+          averageScoreIncomplete: "0",
+          topScores: [],
+          topIncomplete: [],
+          rawTimestamps: [],
+          rawTimestampsIncomplete: [],
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
     }
-    
-    // Extract data
-    const headers = values[0];
-    const rows = values.slice(1);
-    
-    // Find column indexes
-    const nameIndex = headers.indexOf("User Name");
-    const scoreIndex = headers.indexOf("Score");
-    const totalQuestionsIndex = headers.indexOf("Total Questions");
-    const timestampIndex = headers.indexOf("Timestamp");
-    const completedIndex = headers.indexOf("Completed");
-    const answersIndex = headers.indexOf("Answers JSON");
-    
-    if (nameIndex === -1 || scoreIndex === -1) {
-      throw new Error("Could not find required columns: 'User Name' or 'Score'");
+
+    var headers = values[0];
+    var rows = values.slice(1);
+    var col = headerIndexMap(headers);
+
+    var projectCol = col["Project ID"];
+    if (projectFilter && projectCol !== undefined) {
+      rows = rows.filter(function (row) {
+        return String(row[projectCol] || "").trim() === projectFilter;
+      });
     }
-    
-    let totalScore = 0;
-    const players = [];
-    const rawTimestamps = []; // Store raw timestamp strings for completed quizzes
-    const rawTimestampsIncomplete = []; // Store raw timestamp strings for incomplete quizzes
-    
-    rows.forEach(row => {
-      const name = row[nameIndex] || "Anonymous";
-      const score = Number(row[scoreIndex]) || 0;
-      const totalQuestions = totalQuestionsIndex !== -1 ? (Number(row[totalQuestionsIndex]) || 0) : 0;
-      
-      // Parse answers JSON to get count if totalQuestions is not available
-      let answersCount = 0;
-      if (answersIndex !== -1 && row[answersIndex]) {
-        try {
-          const answers = JSON.parse(row[answersIndex]);
-          if (Array.isArray(answers)) {
-            answersCount = answers.length;
+
+    var isPoll = isNewPollHeaders(headers);
+    var isLegacy = isLegacyQuizHeaders(headers);
+
+    if (!isPoll && !isLegacy) {
+      throw new Error("Unrecognized sheet headers. Use a fresh sheet or the template header row.");
+    }
+
+    var nameIndex = col["User Name"];
+    var timestampIndex = col["Timestamp"];
+    var completedIndex = col["Completed"];
+    var answersIndex = col["Answers JSON"];
+
+    if (nameIndex === undefined) {
+      throw new Error("Could not find required column: 'User Name'");
+    }
+
+    var players = [];
+    var rawTimestamps = [];
+    var rawTimestampsIncomplete = [];
+
+    rows.forEach(function (row) {
+      var name = row[nameIndex] || "Anonymous";
+      var isCompleted = true;
+      var answeredCount = 0;
+      var pollTotal = 0;
+      var scoreLabel = "";
+
+      if (isPoll) {
+        var pollDone = rowCompletedPoll(row, col);
+        if (completedIndex !== undefined && row[completedIndex] !== "" && row[completedIndex] != null) {
+          isCompleted = parseCompletedCell(row[completedIndex]);
+          if (pollDone !== null && col["Poll Total"] !== undefined) {
+            var ac0 = Number(row[col["Answered Count"]]) || 0;
+            var pt0 = Number(row[col["Poll Total"]]) || 0;
+            if (pt0 > 0 && ac0 < pt0) isCompleted = false;
           }
-        } catch (e) {
-          // Ignore parse errors
+        } else if (pollDone !== null) {
+          isCompleted = pollDone;
         }
-      }
-      // Use totalQuestions from sheet, or fallback to answers count
-      const finalTotalQuestions = totalQuestions > 0 ? totalQuestions : answersCount;
-      
-      // Check if quiz was completed (default to true for backward compatibility)
-      // Handle various formats: "Yes", "No", true, false, "TRUE", "FALSE", etc.
-      let isCompleted = true; // Default to completed for backward compatibility
-      if (completedIndex !== -1) {
-        const completedCellValue = row[completedIndex];
-        // Check if cell has a value
-        if (completedCellValue !== null && completedCellValue !== undefined && completedCellValue !== "") {
-          // Convert to string, trim whitespace, and check
-          const completedValue = String(completedCellValue).trim().toUpperCase();
-          // Check for "No", "FALSE", "0", "N", false, etc.
-          if (completedValue === "NO" || completedValue === "FALSE" || completedValue === "0" || completedValue === "N" || completedCellValue === false) {
-            isCompleted = false;
-          } else if (completedValue === "YES" || completedValue === "TRUE" || completedValue === "1" || completedValue === "Y" || completedCellValue === true) {
-            isCompleted = true;
-          }
-          // If it doesn't match any known pattern, keep default (true)
+
+        answeredCount =
+          col["Answered Count"] !== undefined ? Number(row[col["Answered Count"]]) || 0 : 0;
+        pollTotal = col["Poll Total"] !== undefined ? Number(row[col["Poll Total"]]) || 0 : 0;
+
+        if (answersIndex !== undefined && row[answersIndex] && answeredCount === 0) {
+          try {
+            var parsed = JSON.parse(row[answersIndex]);
+            if (Array.isArray(parsed)) answeredCount = parsed.length;
+          } catch (ignore) {}
         }
-        // If cell is empty/null/undefined, default to true (backward compatibility)
-      }
-      
-      // Override: If totalQuestions is less than 10, mark as incomplete
-      // (A complete quiz should have answered all 10 questions)
-      if (finalTotalQuestions < 10) {
-        isCompleted = false;
-      }
-      
-      // Only count completed quizzes for average score
-      if (isCompleted) {
-        totalScore += score;
+        scoreLabel = pollTotal > 0 ? answeredCount + "/" + pollTotal : String(answeredCount);
+      } else {
+        var scoreIndex = col["Score"];
+        var totalQuestionsIndex = col["Total Questions"];
+        var score = scoreIndex !== undefined ? Number(row[scoreIndex]) || 0 : 0;
+        var totalQuestions =
+          totalQuestionsIndex !== undefined ? Number(row[totalQuestionsIndex]) || 0 : 0;
+        var answersCount = 0;
+        if (answersIndex !== undefined && row[answersIndex]) {
+          try {
+            var ans = JSON.parse(row[answersIndex]);
+            if (Array.isArray(ans)) answersCount = ans.length;
+          } catch (e2) {}
+        }
+        var finalTotalQuestions = totalQuestions > 0 ? totalQuestions : answersCount;
+
+        if (completedIndex !== undefined && row[completedIndex] !== "" && row[completedIndex] != null) {
+          isCompleted = parseCompletedCell(row[completedIndex]);
+        }
+        if (finalTotalQuestions < 10) isCompleted = false;
+
+        answeredCount = finalTotalQuestions;
+        pollTotal = 10;
+        scoreLabel = String(score);
       }
 
-      // Get raw timestamp string as-is from the sheet
-      let rawTimestamp = "";
-      let timeOfDay = "";
-      if (timestampIndex !== -1 && row[timestampIndex]) {
-        const timestampValue = row[timestampIndex];
-        
-        // If it's a Date object, convert to ISO string
+      var rawTimestamp = "";
+      var timeOfDay = "";
+      if (timestampIndex !== undefined && row[timestampIndex]) {
+        var timestampValue = row[timestampIndex];
         if (timestampValue instanceof Date) {
           rawTimestamp = timestampValue.toISOString();
-          // Also extract time for display
-          const hours = String(timestampValue.getHours()).padStart(2, '0');
-          const minutes = String(timestampValue.getMinutes()).padStart(2, '0');
-          timeOfDay = `${hours}:${minutes}`;
-        } else if (typeof timestampValue === 'string' && timestampValue.trim() !== '') {
-          // Return the string as-is
+          timeOfDay =
+            pad2(timestampValue.getHours()) + ":" + pad2(timestampValue.getMinutes());
+        } else if (typeof timestampValue === "string" && timestampValue.trim() !== "") {
           rawTimestamp = timestampValue.trim();
         } else {
-          // Try to convert to string
           rawTimestamp = String(timestampValue);
         }
-        
-        // Store raw timestamp string for client-side parsing
         if (rawTimestamp) {
-          if (isCompleted) {
-            rawTimestamps.push(rawTimestamp);
-          } else {
-            rawTimestampsIncomplete.push(rawTimestamp);
-          }
+          if (isCompleted) rawTimestamps.push(rawTimestamp);
+          else rawTimestampsIncomplete.push(rawTimestamp);
         }
       }
 
-      // Parse answers safely
-      let answersArray = [];
-      if (answersIndex !== -1 && row[answersIndex]) {
+      var answersArray = [];
+      if (answersIndex !== undefined && row[answersIndex]) {
         try {
-          const parsed = JSON.parse(row[answersIndex]);
-          if (Array.isArray(parsed)) {
-            answersArray = parsed;
-          }
-        } catch (e) {
-          // Ignore parse errors
-        }
+          var p2 = JSON.parse(row[answersIndex]);
+          if (Array.isArray(p2)) answersArray = p2;
+        } catch (e3) {}
       }
 
-      players.push({ 
-        name: name, 
-        score: score, 
-        totalQuestions: finalTotalQuestions,
-        time: timeOfDay, 
+      players.push({
+        name: name,
+        score: scoreLabel,
+        answeredCount: answeredCount,
+        pollTotal: pollTotal,
+        totalQuestions: answeredCount,
+        time: timeOfDay,
         rawTimestamp: rawTimestamp,
         completed: isCompleted,
-        answers: answersArray
+        answers: answersArray,
       });
     });
-    
-    // Separate completed and incomplete players
-    const completedPlayers = players.filter(p => p.completed);
-    const incompletePlayers = players.filter(p => !p.completed);
-    
-    const completedCount = completedPlayers.length;
-    const incompleteCount = incompletePlayers.length;
-    
-    // Calculate average scores separately
-    let totalScoreCompleted = 0;
-    completedPlayers.forEach(p => totalScoreCompleted += p.score);
-    let averageScoreCompleted = 0;
-    if (completedCount > 0) {
-      averageScoreCompleted = (totalScoreCompleted / completedCount).toFixed(1);
+
+    var completedPlayers = players.filter(function (p) {
+      return p.completed;
+    });
+    var incompletePlayers = players.filter(function (p) {
+      return !p.completed;
+    });
+
+    function tsSort(a, b) {
+      return new Date(b.rawTimestamp || 0).getTime() - new Date(a.rawTimestamp || 0).getTime();
     }
-    
-    let totalScoreIncomplete = 0;
-    incompletePlayers.forEach(p => totalScoreIncomplete += p.score);
-    let averageScoreIncomplete = 0;
-    if (incompleteCount > 0) {
-      averageScoreIncomplete = (totalScoreIncomplete / incompleteCount).toFixed(1);
-    }
-    
-    // Overall average (for backward compatibility - only completed)
-    const averageScore = averageScoreCompleted;
-    
-    // Sort by score descending (return all, not just top 5)
-    completedPlayers.sort((a, b) => b.score - a.score);
-    const topScores = completedPlayers; // Return all completed quizzes
-    
-    // Also include incomplete quizzes (sorted by score, return all)
-    incompletePlayers.sort((a, b) => b.score - a.score);
-    const topIncomplete = incompletePlayers; // Return all incomplete quizzes
-    
-    return ContentService
-      .createTextOutput(JSON.stringify({
+    completedPlayers.sort(tsSort);
+    incompletePlayers.sort(tsSort);
+
+    var completedCount = completedPlayers.length;
+    var incompleteCount = incompletePlayers.length;
+
+    var sumAnsComplete = 0;
+    completedPlayers.forEach(function (p) {
+      sumAnsComplete += p.answeredCount;
+    });
+    var averageScoreCompleted =
+      completedCount > 0 ? (sumAnsComplete / completedCount).toFixed(1) : "0";
+
+    var sumAnsInc = 0;
+    incompletePlayers.forEach(function (p) {
+      sumAnsInc += p.answeredCount;
+    });
+    var averageScoreIncomplete =
+      incompleteCount > 0 ? (sumAnsInc / incompleteCount).toFixed(1) : "0";
+
+    var averageScore = Number(averageScoreCompleted);
+
+    return ContentService.createTextOutput(
+      JSON.stringify({
         result: "success",
-        totalPlayers: completedCount, // Only completed for main metric
-        averageScore: averageScore, // Average of completed quizzes
-        completedCount: completedCount, // Explicit count of completed
-        incompleteCount: incompleteCount, // Explicit count of incomplete
-        averageScoreCompleted: averageScoreCompleted, // Average score of completed quizzes
-        averageScoreIncomplete: averageScoreIncomplete, // Average score of incomplete quizzes
-        topScores: topScores, // Top completed quizzes
-        topIncomplete: topIncomplete, // Top incomplete quizzes
-        rawTimestamps: rawTimestamps, // Raw timestamp strings for completed quizzes
-        rawTimestampsIncomplete: rawTimestampsIncomplete // Raw timestamp strings for incomplete quizzes
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-      
+        totalPlayers: completedCount,
+        averageScore: averageScore,
+        completedCount: completedCount,
+        incompleteCount: incompleteCount,
+        averageScoreCompleted: averageScoreCompleted,
+        averageScoreIncomplete: averageScoreIncomplete,
+        topScores: completedPlayers,
+        topIncomplete: incompletePlayers,
+        rawTimestamps: rawTimestamps,
+        rawTimestampsIncomplete: rawTimestampsIncomplete,
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({
+    return ContentService.createTextOutput(
+      JSON.stringify({
         result: "error",
         message: "Failed to retrieve metrics",
-        error: error.toString()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+        error: error.toString(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function pad2(n) {
+  return (n < 10 ? "0" : "") + n;
 }

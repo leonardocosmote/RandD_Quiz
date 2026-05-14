@@ -1,170 +1,203 @@
 [
   {
-    "question": "Σε πόσα επιδοτούμενα ερευνητικά έργα (R&D projects) έχει συμμετάσχει το R&D του Ομίλου ΟΤΕ από την ίδρυσή του (το 2014) μέχρι σήμερα;",
-    "options": [
-      "~20",
-      "~50",
-      "100+",
-      "200+"
-    ],
-    "correctIndex": 2,
-    "feedbackCorrect": "Ακριβώς! Έχουμε αφήσει το στίγμα μας σε πάνω από 100 ερευνητικά έργα. 🎯",
-    "feedbackWrong": "Λίγο διαφορετικό απ’ όσο φαντάζεσαι και συνεχίζουμε κάθε χρόνο δυναμικά! 🚀"
+    "id": 1,
+    "type": "single",
+    "question": "Had you heard about 6G-EWOC before today?",
+    "options": ["Yes", "No", "Only vaguely"],
+    "feedback": [
+      "Nice — you already had 6G-EWOC on your radar before today.",
+      "Thanks for the candour; we hope the next minutes turn that into a clearer picture.",
+      "Fair enough — a little name recognition is already a good starting point for a short conversation."
+    ]
   },
   {
-    "question": "Ποια τεχνολογία ΔΕΝ ανήκει στις δραστηριότητες του R&D;",
+    "id": 2,
+    "type": "rank",
+    "question": "Which 6G-EWOC technology interests you most?",
     "options": [
-      "6G",
-      "IoT",
-      "Quantum Communications",
-      "Rocket Science"
+      "Optical wireless communication",
+      "AI orchestration",
+      "Integrated sensing",
+      "Edge/cloud intelligence",
+      "Smart mobility applications"
     ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Σωστά. Όσο συναρπαστικοί κι αν είναι οι πύραυλοι, δεν τους μελετάμε... ακόμα! 🧬",
-    "feedbackWrong": "Hint: Το rocket science δεν είναι ψηφιακή τεχνολογία. Φτάνουμε μέχρι και στις κβαντικές επικοινωνίες! ✨"
+    "feedback": [
+      "Light and fibre at the top of your list — optical wireless is one of the threads where 6G research is moving fastest.",
+      "Orchestration first — you’re thinking about how complex networks stay coherent when everything becomes programmable.",
+      "Sensing in the lead — tying the physical world to the digital layer is exactly where integrated sensing earns its keep.",
+      "You’d start from the middle ground — edge and cloud intelligence is where latency, cost, and control meet in practice.",
+      "Mobility up front — moving people and goods smarter is a story 6G keeps coming back to, and you’ve put it first."
+    ]
   },
   {
-    "question": "Ποιο από τα παρακάτω testbeds διαθέτει το R&D;",
+    "id": 3,
+    "type": "rank",
+    "question": "Which sensing capability will create the most value in 6G networks?",
     "options": [
-      "5G SA & ICT Cloud",
-      "IoT & AI Ecosystem",
-      "FTTH",
-      "Όλα τα παραπάνω"
+      "Traffic awareness",
+      "Environmental monitoring",
+      "Precision positioning",
+      "Infrastructure diagnostics",
+      "Crowd management"
     ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Σωστά! Έχουμε από IoT μέχρι 5G SA (Standalone) δικά μας. 📡",
-    "feedbackWrong": "Σκεφτόμαστε πάντα… XXL! H σωστή απάντηση είναι «Όλα τα παραπάνω»! ✅"
+    "feedback": [
+      "If traffic and roads are your #1, you’re in good company — smarter corridors and safer mobility are a headline use case for network sensing.",
+      "Planet-scale awareness first — environmental sensing lines up with how many European 6G roadmaps talk about sustainability and resilience.",
+      "Precision at the top — when centimetres matter, industry, logistics, and urban services all lean on that kind of sensing depth.",
+      "Infrastructure health in pole position — quiet, always-on diagnostics are what keeps critical networks boring in the best way.",
+      "Crowd and public space first — a sensitive area where technology, policy, and trust have to move together."
+    ]
   },
   {
-    "question": "Πόσες in house εφαρμογές/ολοκληρωμένες λύσεις/εργαλεία έχει υλοποιήσει το R&D;",
-    "options": [
-      "0",
-      "5",
-      "20+",
-      "50+"
-    ],
-    "correctIndex": 2,
-    "feedbackCorrect": "20+ apps, όλα δικά μας. Not bad! 💻",
-    "feedbackWrong": "Το νούμερο είναι λίγο διαφορετικό… στην πραγματικότητα έχουμε φτιάξει πάνω απο 20 apps 😉"
+    "id": 4,
+    "type": "single",
+    "question": "Where should intelligence primarily reside in 6G systems?",
+    "options": ["Edge devices", "Edge cloud", "Central cloud", "Distributed hybrid architecture"],
+    "feedback": [
+      "You’d push brains right next to the action — on-device intelligence keeps latency low and data local.",
+      "Regional edge cloud as your anchor — enough scale to optimise, close enough to matter for real-time workloads.",
+      "Central cloud still carries the flag for you — global coordination, heavy models, and strong governance patterns.",
+      "Hybrid wins your top slot — that mirrors how production networks evolve: no single tier does everything alone."
+    ]
   },
   {
-    "question": "Ποια από τις παρακάτω είναι ολοκληρωμένη λύση του R&D;",
+    "id": 5,
+    "type": "rank",
+    "question": "What should AI manage first in future 6G networks?",
     "options": [
-      "Smart Home/Building",
-      "Smart Glasses for the Vision Impaired",
-      "Early Wildfire Detection",
-      "Όλες οι παραπάνω"
+      "Resource allocation",
+      "Mobility management",
+      "Security monitoring",
+      "Energy optimization",
+      "Predictive maintenance"
     ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Σωστά! Το R&D αναπτύσσει λύσεις για κάθε πρόκληση, από την καθημερινότητα μέχρι την ασφάλεια. 💡",
-    "feedbackWrong": "Κι όμως, όλες αυτές οι λύσεις είναι δικές μας! Δημιουργούμε τεχνολογία για έναν καλύτερο κόσμο. 🌍"
+    "feedback": [
+      "Efficiency first — squeezing more from spectrum, compute, and capacity is a very operator-shaped priority.",
+      "Mobility at the front — keeping sessions seamless on the move is still one of the hardest problems at scale.",
+      "Security monitoring on top — with attack surfaces widening, many teams would agree that vigilance can’t wait.",
+      "Energy optimisation as #1 — a stance that matches Europe’s push for greener, leaner digital infrastructure.",
+      "Predictive maintenance leads for you — reliability engineering with a crystal ball, before faults become headlines."
+    ]
   },
   {
-    "question": "Πόσες συνεργασίες με εταίρους της βιομηχανίας και της επιστημονικής κοινότητας, σε Ελλάδα και Ευρώπη, έχει εδραιώσει το R&D μέχρι σήμερα;",
-    "options": [
-      "50-",
-      "200-",
-      "500+",
-      "1.000+"
-    ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Χίλιες συνεργασίες! Όχι, δεν είναι typo! 🤝",
-    "feedbackWrong": "Είμαστε εξαιρετικά εξωστρεφείς οι συνεργασίες μας ξεπερνούν τις 1.000! 🌍"
+    "id": 6,
+    "type": "single",
+    "question": "Would you trust AI to autonomously manage future mobility?",
+    "options": ["Yes", "Yes, with human oversight", "Only in limited cases", "No"],
+    "feedback": [
+      "Full autonomy as your top answer — bold, and a useful signal for how fast you think policy and technology can move together.",
+      "Humans in the loop first — that tracks how serious pilots are framed today: capable automation, visible accountability.",
+      "Limited cases on top — a cautious, stepwise view that fits many regulators’ comfort zones around mobility AI.",
+      "A firm “not yet” in first place — scepticism here is data too; it keeps expectations and safety models honest."
+    ]
   },
   {
-    "question": "Σε ποιο ευρωπαϊκό πλαίσιο δραστηριοποιείται το R&D από το 2025 για την ανάπτυξη του 6G;",
+    "id": 7,
+    "type": "rank",
+    "question": "What will be the defining cybersecurity challenge for 6G?",
     "options": [
-      "Κατασκευή οπτικών καλωδίων",
-      "SNS-JU (Smart Networks and Services Joint Undertaking)",
-      "ΕΣΠΑ",
-      "Web design"
+      "AI-driven attacks",
+      "Quantum threats",
+      "Massive device scale",
+      "Privacy protection",
+      "Supply-chain trust"
     ],
-    "correctIndex": 1,
-    "feedbackCorrect": "Ω ναι! Ήδη ασχολούμαστε με το μέλλον (6G) μέσω του SNS-JU. 🔮",
-    "feedbackWrong": "Ήδη τρέχουμε στο SNS-JU και ετοιμάζουμε το 6G! 🚀"
+    "feedback": [
+      "Offensive AI in the lead — the attacker–defender race is only getting more automated; your instinct matches the briefings.",
+      "Quantum on your mind — long-horizon cryptography and trust transitions are finally on every CISO’s slide deck.",
+      "Scale as the enemy — once endpoints number in the billions, “secure enough” has to be redefined from the ground up.",
+      "Privacy first — a very European framing: rights-by-design alongside throughput and coverage.",
+      "Supply-chain trust at the top — components and vendors are now part of the threat model, not an afterthought."
+    ]
   },
   {
-    "question": "Τι είδους υποδομές διαθέτει το R&D για ανάπτυξη, πειραματισμό και αξιολόγηση τεχνολογιών και εφαρμογών;",
+    "id": 8,
+    "type": "rank",
+    "question": "What is the most important sustainability metric for 6G systems?",
     "options": [
-      "Βασικές εμπορικές εγκαταστάσεις",
-      "(Beyond) State-of-the-Art testbeds με χρηματοδότηση από την Ευρωπαϊκή Επιτροπή",
-      "Υποδομές σε προσομοίωση",
-      "Ένα cloud περιβάλλον"
+      "Energy per bit",
+      "Infrastructure lifecycle impact",
+      "Renewable integration",
+      "Hardware reuse",
+      "Network efficiency"
     ],
-    "correctIndex": 1,
-    "feedbackCorrect": "Βρισκόμαστε στην 'αιχμή' της τεχνολογίας, δοκιμάζοντας συστήματα που ακόμα δεν έχουν βγει στην αγορά. 🧪",
-    "feedbackWrong": "Τα testbeds μας είναι Beyond State-of-the-Art, με boost από την Ευρωπαϊκή Επιτροπή! ⚙️"
+    "feedback": [
+      "Bits-per-joule thinking — you’d measure what really counts for climate-aware networks.",
+      "Lifecycle first — cradle-to-grave infrastructure is harder to spreadsheet, but harder to greenwash too.",
+      "Renewables on top — matching traffic to clean electrons is where policy, markets, and engineering meet.",
+      "Reuse in pole position — circular hardware thinking challenges the “replace every cycle” habit in ICT.",
+      "Holistic efficiency leads — still the KPI many operators know how to defend in boardrooms and public consultations."
+    ]
   },
   {
-    "question": "Σε πόσες επιστημονικές δημοσιεύσεις έχει συμμετάσχει το R&D μέχρι σήμερα;",
+    "id": 9,
+    "type": "rank",
+    "question": "What matters most for citizens in future networks?",
     "options": [
-      "0",
-      "100-",
-      "300+",
-      "500+"
+      "Reliability",
+      "Maximum data privacy",
+      "Ultra-fast everywhere: Performance / Speed",
+      "Go green: Sustainability and low energy use",
+      "Affordability"
     ],
-    "correctIndex": 2,
-    "feedbackCorrect": "Πάνω από 300 επιστημονικές δημοσιεύσεις, ενισχύοντας την καινοτομία διεθνώς! 📚",
-    "feedbackWrong": "Είμαστε πολύ δραστήριοι στον ακαδημαϊκό χώρο με 300+ δημοσιεύσεις και συνεχίζουμε! ✍️"
+    "feedback": [
+      "Always-on expectation first — outages are what people remember; your answer reads very “utility-grade”.",
+      "Privacy at the top — control over personal data is a headline value in EU digital policy, and you’ve aligned with it.",
+      "Speed still wins your ranking — throughput and latency remain the promise citizens ask about first at demos.",
+      "Green first — sustainability as part of the social licence to roll out infrastructure is a strong 6G-era signal.",
+      "Affordability leads — inclusion matters as much as peak performance; networks nobody can pay for help no one."
+    ]
   },
   {
-    "question": "Τι κάνει η λύση “VR Remote Surveillance”;",
+    "id": 10,
+    "type": "single",
+    "question": "Which area best reflects your main area of expertise or professional activity?",
     "options": [
-      "Χρησιμοποιεί drones για περιπολίες",
-      "Παίζει 360° video",
-      "Ελέγχει PTZ κάμερες μέσω head gestures & voice commands",
-      "Κάνει μόνο ηχογράφηση"
+      "Optical and wireless communication technologies",
+      "Artificial intelligence and data-driven networking",
+      "Integrated sensing and positioning systems",
+      "Edge / cloud computing and distributed intelligence",
+      "Smart mobility and transportation systems",
+      "Cybersecurity and privacy",
+      "Network architecture and resource management",
+      "Sustainability, energy efficiency, and green ICT",
+      "Policy, standardization, or regulation",
+      "Research and academia",
+      "Industry and product development",
+      "Other (please specify):"
     ],
-    "correctIndex": 2,
-    "feedbackCorrect": "Ακριβώς! Ορατότητα και έλεγχος με κινήσεις κεφαλιού και φωνητικές εντολές. 🕶️",
-    "feedbackWrong": "Είναι super φουτουριστικό: χειρίζεσαι κάμερες με κινήσεις κεφαλιού και φωνητικές εντολές! 🎮"
+    "feedback": [
+      "Optical and wireless in your corner — you’re speaking the physical layer’s language.",
+      "AI and data-driven networking — the stack where models, traffic, and policy now meet every week.",
+      "Sensing and positioning — where the map of the world and the map of the network have to agree.",
+      "Edge and cloud — the architectural trade space every serious 6G trial still argues about.",
+      "Mobility and transport — a domain where standards, safety, and spectacle share the same stage.",
+      "Security and privacy — thank you; that lens keeps the rest of the roadmap honest.",
+      "Architecture and resources — someone has to hold the end-to-end view when silos multiply.",
+      "Sustainability and green ICT — your answers will read differently through that filter, and that’s valuable.",
+      "Policy and standardisation — the slow gear that still decides what ships in a decade.",
+      "Research and academia — curiosity with citations; we’re glad you stopped at the booth.",
+      "Industry and product — pressure-tested views from people who ship are gold for a project like EWOC.",
+      "Thanks for naming your own lane — “Other” often carries the most specific insight."
+    ]
   },
   {
-    "question": "Τι υποστηρίζει το e2e ΙοΤ testbed του R&D;",
+    "id": 11,
+    "type": "single",
+    "question": "To help us understand participation trends across different technology domains, we invite you to optionally share your gender. What is your gender?",
     "options": [
-      "Έλεγχο φωτισμού",
-      "Χρήση εμπορικών αισθητήρων",
-      "Έλεγχο συσκευών μόνο μέσω mobile app",
-      "Ενσωμάτωση αισθητήρων (commercial/custom) οποιουδήποτε τύπου, 100's αυτοματισμούς, interactive dashboards, real-time alerting, κτλ."
+      "Woman",
+      "Man",
+      "Non-binary",
+      "Prefer to self-describe:",
+      "Prefer not to say"
     ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Σωστά! Υποστηρίζει μια τεράστια ποικιλία αυτοματισμών και dashboards. 📊",
-    "feedbackWrong": "Κάνει πολύ περισσότερα από ένα απλό app ενσωματώνει αισθητήρες, dashboards, alerts, αυτοματισμούς και άλλα πολλά. 🤖"
-  },
-  {
-    "question": "Ποιο είναι το βασικό χαρακτηριστικό της λύσης “AI-based Physical Security with Cognition”;",
-    "options": [
-      "Αναπαραγωγή ήχων αποτροπής",
-      "Παρακολούθηση συμβάντος από πολλαπλές γωνίες θέασης και αξιοποίηση activity detectors (PIR)",
-      "Προληπτική συντήρηση εξοπλισμού",
-      "Αναγνώριση προσώπων μόνο"
-    ],
-    "correctIndex": 1,
-    "feedbackCorrect": "Σωστά! Συγκεντρώνει στοιχεία (κάμερες, PIR) για απόλυτη επιβεβαίωση συμβάντων. 👁️",
-    "feedbackWrong": "Συνδυάζει πολλαπλές γωνίες θέασης και activity detectors για να μη χάνεται κανένα σημαντικό συμβάν. 🔍"
-  },
-  {
-    "question": "Σε πόσα SNS-JU (6G) EU-funded projects συμμετέχει το R&D του Ομίλου σήμερα;",
-    "options": [
-      "0",
-      "5",
-      "10",
-      "15+"
-    ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Πράγματι! Συμμετέχουμε σε περισσότερα από 15 projects για το μελλοντικό 6G. 🌐",
-    "feedbackWrong": "Έχουμε βουτήξει στα βαθιά: συμμετέχουμε σε 15+ ευρωπαϊκά projects για το 6G! 🌊"
-  },
-  {
-    "question": "Σε πόσες προτάσεις προς χρηματοδότηση έχει συμμετάσχει το R&D του Ομίλου από το 2014;",
-    "options": [
-      "20",
-      "50",
-      "100",
-      "400+"
-    ],
-    "correctIndex": 3,
-    "feedbackCorrect": "Πάνω από 400! Ψάχνουμε συνεχώς τρόπους για να πρωτοπορούμε. 🚀",
-    "feedbackWrong": "Η πραγματικότητα είναι ακόμα πιο εντυπωσιακή έχουμε συμμετάσχει σε 400+ προτάσεις χρηματοδότησης! 💡"
+    "feedback": [
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you for describing that in your own words — we’ll treat it carefully and only at aggregate level.",
+      "Understood — we’ll rely on your other answers for the technical picture; thank you for taking part."
+    ]
   }
 ]

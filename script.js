@@ -1,466 +1,528 @@
-// State Management
+// =============================================================================
+// 6G-EWOC tablet poll — questions loaded from questions.json (no right/wrong).
+// =============================================================================
+
+const PROJECT_ID = '6G-EWOC';
+
+const FALLBACK_FEEDBACK = [
+    'Thank you — your answer is noted.',
+    'Thanks — we have recorded your response.',
+    'Noted. Your input helps shape how we read these results.',
+];
+
 let quizState = {
     questions: [],
+    allQuestions: [],
     currentQuestionIndex: 0,
     userName: '',
-    score: 0,
-    answers: [], // Track user answers
-    isCompleted: false, // Track if quiz was completed
-    googleAppsScriptUrl: 'https://script.google.com/macros/s/AKfycbzV4METVPHfnwMna8VsBDMskn8cZ9-Lokj_-SQHLPABGkBcC_oNn2LjcoUXs6EncHloDg/exec' // old: https://script.google.com/macros/s/AKfycbxc99n668g30Tt35xUCWyHIWy2S4NGlpZ-pLkjqdkAFgKNcra1RgCwsfno81vreD4-JAQ/exec
+    answers: [],
+    isCompleted: false,
+    googleAppsScriptUrl:
+        'https://script.google.com/macros/s/AKfycbymAWalVqzdDRN7pD3PyGytcBGVcE8iJkGLeaBa-o7V_tnw1a1voiUZpEK6j7uPDkUg/exec',
 };
 
-// DOM Elements
+let rankOrder = []; // option indices in rank order (length 1–3)
+
+const quizScreenEl = document.getElementById('quizScreen');
+
 const startScreen = document.getElementById('startScreen');
-const quizScreen = document.getElementById('quizScreen');
-const resultsScreen = document.getElementById('resultsScreen');
 
 const userNameInput = document.getElementById('userName');
 const startBtn = document.getElementById('startBtn');
-const submitBtn = document.getElementById('submitBtn');
 const retryBtn = document.getElementById('retryBtn');
 const nameError = document.getElementById('nameError');
 
 const questionText = document.getElementById('question-text');
 const optionsContainer = document.getElementById('optionsContainer');
-const feedbackContainer = document.getElementById('feedbackContainer'); // New element added
-const feedbackText = document.getElementById('feedbackText'); // New element added
+const feedbackContainer = document.getElementById('feedbackContainer');
+const feedbackText = document.getElementById('feedbackText');
 const progressBar = document.querySelector('.progress-fill');
 const currentQuestionSpan = document.getElementById('currentQuestion');
 const totalQuestionsSpan = document.getElementById('totalQuestions');
-const currentScoreSpan = document.getElementById('currentScore'); // New element added
 
 const resultUserName = document.getElementById('resultUserName');
-const finalScore = document.getElementById('final-score');
-const totalScore = document.getElementById('totalScore');
-const percentage = document.getElementById('percentage');
 const submitStatus = document.getElementById('submitStatus');
+const thankYouBlock = document.getElementById('thankYouBlock');
 
-// QR Code elements
+const rankFooter = document.getElementById('rankFooter');
+const rankConfirmBtn = document.getElementById('rankConfirmBtn');
+const freeTextPanel = document.getElementById('freeTextPanel');
+const freeTextInput = document.getElementById('freeTextInput');
+const freeTextLabel = document.getElementById('freeTextLabel');
+const freeTextContinueBtn = document.getElementById('freeTextContinueBtn');
+const freeTextBackBtn = document.getElementById('freeTextBackBtn');
+
 const qrCodeBtn = document.getElementById('qrCodeBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
 const qrModalClose = document.getElementById('qrModalClose');
 const qrCodeContainer = document.getElementById('qrcode');
 
-// QR Code URL
-const QUIZ_URL = 'https://leonardocosmote.github.io/quiz/';
+const QUIZ_URL = typeof window !== 'undefined' && window.location ? window.location.href.split('?')[0] : '';
 
-// Initialize
+function optionNeedsFreeText(label) {
+    const t = (label || '').toLowerCase();
+    return (
+        /\bother\b/.test(t) ||
+        /self-describe/.test(t) ||
+        /please specify/.test(t) ||
+        /prefer to self-describe/.test(t)
+    );
+}
+
+/** Normalize items from questions.json (type defaults from id if omitted). */
+function normalizeQuestionsFromJson(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .map((item, index) => {
+            const id = typeof item.id === 'number' ? item.id : index + 1;
+            let type = item.type;
+            if (type !== 'rank' && type !== 'single') {
+                type = id >= 2 && id <= 9 ? 'rank' : 'single';
+            }
+            const options = Array.isArray(item.options) ? item.options.map((o) => String(o)) : [];
+            let feedback = Array.isArray(item.feedback) ? item.feedback.map((f) => String(f).trim()) : [];
+            if (feedback.length > options.length) feedback = feedback.slice(0, options.length);
+            return {
+                id,
+                question: String(item.question || '').trim(),
+                options,
+                type,
+                feedback,
+            };
+        })
+        .filter((q) => q.question && q.options.length > 0)
+        .sort((a, b) => a.id - b.id);
+}
+
+/** Tighter typography + scrollable option list for long stems / many options. */
+function updateQuizLayoutDenseClass(question) {
+    if (!quizScreenEl || !question) return;
+    const stemLen = (question.question || '').length;
+    const manyOptions = question.options.length >= 8;
+    const longOptionLine = question.options.some((o) => (o || '').length > 52);
+    quizScreenEl.classList.toggle('quiz-layout--dense', manyOptions || stemLen > 130 || longOptionLine);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions();
     attachEventListeners();
     setupIncompleteQuizTracking();
     setupQRCode();
+    if (rankConfirmBtn) {
+        rankConfirmBtn.addEventListener('click', confirmRankAndAdvance);
+    }
+    if (freeTextContinueBtn) {
+        freeTextContinueBtn.addEventListener('click', submitFreeTextAndAdvance);
+    }
+    if (freeTextBackBtn) {
+        freeTextBackBtn.addEventListener('click', cancelFreeTextAndReopenOptions);
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (
+            freeTextPanel &&
+            pendingSingle &&
+            !freeTextPanel.classList.contains('hidden')
+        ) {
+            e.preventDefault();
+            cancelFreeTextAndReopenOptions();
+        }
+    });
 });
 
-// Track incomplete quizzes when user leaves
 function setupIncompleteQuizTracking() {
-    // Track when user leaves/closes the page
-    window.addEventListener('beforeunload', (e) => {
-        // Only submit if user has answered at least 3 questions
-        if (quizState.userName && quizState.answers.length >= 3 && !quizState.isCompleted) {
-            // Use synchronous XMLHttpRequest for beforeunload (most reliable)
+    window.addEventListener('beforeunload', () => {
+        if (quizState.userName && quizState.answers.length >= 2 && !quizState.isCompleted) {
             submitIncompleteQuizSync();
         }
     });
-
-    // Also track visibility change (tab switch, minimize, etc.)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && quizState.userName && quizState.answers.length >= 3 && !quizState.isCompleted) {
-            // Use fetch with keepalive for visibility change
+        if (document.hidden && quizState.userName && quizState.answers.length >= 2 && !quizState.isCompleted) {
             submitIncompleteQuiz();
         }
     });
 }
 
-// Event Listeners
 function attachEventListeners() {
     startBtn.addEventListener('click', startQuiz);
-    // submitBtn.addEventListener('click', submitScore);
     retryBtn.addEventListener('click', retakeQuiz);
-
-    // Clear inline error as user types and prevent numbers
     if (userNameInput && nameError) {
-        userNameInput.addEventListener('input', (e) => {
-            // Remove any numbers from the input immediately
-            if (/\d/.test(e.target.value)) {
-                e.target.value = e.target.value.replace(/\d/g, '');
-                nameError.textContent = 'Το όνομά σου δεν πρέπει να περιέχει αριθμούς!';
-                nameError.classList.remove('hidden');
-            } else {
-                nameError.classList.add('hidden');
-            }
+        userNameInput.addEventListener('input', () => {
+            nameError.classList.add('hidden');
         });
     }
 }
 
-// Setup QR Code functionality
 function setupQRCode() {
     if (!qrCodeBtn || !qrCodeModal || !qrModalClose) return;
-
-    // Open modal when button is clicked
-    qrCodeBtn.addEventListener('click', () => {
-        showQRCode();
-    });
-
-    // Close modal when X is clicked
-    qrModalClose.addEventListener('click', () => {
-        hideQRCode();
-    });
-
-    // Close modal when clicking outside
+    qrCodeBtn.addEventListener('click', () => showQRCode());
+    qrModalClose.addEventListener('click', () => hideQRCode());
     qrCodeModal.addEventListener('click', (e) => {
-        if (e.target === qrCodeModal) {
-            hideQRCode();
-        }
+        if (e.target === qrCodeModal) hideQRCode();
     });
-
-    // Close modal with Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !qrCodeModal.classList.contains('hidden')) {
-            hideQRCode();
-        }
+        if (e.key === 'Escape' && !qrCodeModal.classList.contains('hidden')) hideQRCode();
     });
 }
 
-// Show QR Code modal and generate QR code
 function showQRCode() {
     if (!qrCodeModal || !qrCodeContainer) return;
-
-    // Clear previous QR code
     qrCodeContainer.innerHTML = '';
-
-    // Show modal first
     qrCodeModal.classList.remove('hidden');
-
-    // Check if library is loaded
-    if (typeof QRCode === 'undefined') {
-        // Try waiting a bit for library to load
-        let attempts = 0;
-        const maxAttempts = 10;
-
-        const checkLibrary = setInterval(() => {
-            attempts++;
-            if (typeof QRCode !== 'undefined') {
-                clearInterval(checkLibrary);
-                generateQRCode();
-            } else if (attempts >= maxAttempts) {
-                clearInterval(checkLibrary);
-                qrCodeContainer.innerHTML = '<p style="color: #f85149; padding: 20px;">QR Code library failed to load.<br>Please check your internet connection and refresh the page.</p>';
-            }
-        }, 200);
-    } else {
-        generateQRCode();
-    }
-
-    function generateQRCode() {
+    const tryGen = () => {
+        if (typeof QRCode === 'undefined') return false;
         try {
-            // Use QRCode.js library
             new QRCode(qrCodeContainer, {
-                text: QUIZ_URL,
+                text: QUIZ_URL || window.location.href,
                 width: 256,
                 height: 256,
                 colorDark: '#0d1117',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.H,
             });
-        } catch (error) {
-            console.error('QR Code generation error:', error);
-            qrCodeContainer.innerHTML = '<p style="color: #f85149; padding: 20px;">Error generating QR code.<br>Please try again.</p>';
+        } catch (err) {
+            console.error(err);
+            qrCodeContainer.textContent = 'Could not generate QR code.';
         }
+        return true;
+    };
+    if (!tryGen()) {
+        let n = 0;
+        const t = setInterval(() => {
+            n++;
+            if (tryGen() || n >= 12) clearInterval(t);
+        }, 200);
     }
 }
 
-// Hide QR Code modal
 function hideQRCode() {
-    if (qrCodeModal) {
-        qrCodeModal.classList.add('hidden');
-    }
+    if (qrCodeModal) qrCodeModal.classList.add('hidden');
 }
 
-// Load Questions from JSON
 async function loadQuestions() {
     try {
         const response = await fetch('questions.json');
-        if (!response.ok) {
-            throw new Error('Failed to load questions');
+        if (!response.ok) throw new Error('Failed to load questions.json');
+        const raw = await response.json();
+        quizState.allQuestions = normalizeQuestionsFromJson(raw);
+        if (!quizState.allQuestions.length) {
+            throw new Error('No valid questions in questions.json');
         }
-        quizState.allQuestions = await response.json(); // Store all questions separately
-
-        // Initial display for total questions before starting
-        const initialTotal = Math.min(10, quizState.allQuestions.length);
-        totalQuestionsSpan.textContent = initialTotal;
-        totalScore.textContent = initialTotal;
+        totalQuestionsSpan.textContent = quizState.allQuestions.length;
     } catch (error) {
-        console.error('Error loading questions:', error);
-        questionText.textContent = 'Error loading quiz. Please refresh the page.';
+        console.error(error);
+        if (questionText) {
+            questionText.textContent = 'Could not load questions. Please refresh or check questions.json.';
+        }
     }
 }
 
-// Randomize Array (Fisher-Yates Shuffle)
-function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-}
-
-// Start Quiz
 function startQuiz() {
     const name = userNameInput.value.trim();
-
     if (!name) {
         if (nameError) {
-            nameError.textContent = 'Παρακαλούμε γράψε το όνομά σου πριν ξεκινήσεις το quiz!';
-            nameError.classList.remove('hidden');
-        }
-        return;
-    }
-
-    if (/\d/.test(name)) {
-        if (nameError) {
-            nameError.textContent = 'Το όνομά σου δεν πρέπει να περιέχει αριθμούς!';
+            nameError.textContent = 'Please enter your name or initials to continue.';
             nameError.classList.remove('hidden');
         }
         return;
     }
 
     quizState.userName = name;
-    quizState.score = 0;
     quizState.currentQuestionIndex = 0;
     quizState.answers = [];
     quizState.isCompleted = false;
-    if (currentScoreSpan) currentScoreSpan.textContent = "0";
+    quizState.questions = [...quizState.allQuestions];
 
-    // Randomize all questions and take up to 10
-    const shuffledQuestions = shuffleArray(quizState.allQuestions);
-    quizState.questions = shuffledQuestions.slice(0, 10);
-
-    // Update the UI with the actual number of questions for this round
     totalQuestionsSpan.textContent = quizState.questions.length;
-    totalScore.textContent = quizState.questions.length;
 
-    // Show quiz screen
     startScreen.classList.remove('active');
-    quizScreen.classList.add('active');
+    quizScreenEl.classList.add('active');
 
-    // Display first question
     displayQuestion();
 }
 
-// Display Current Question
+/** Per-option copy from questions.json; uses top rank (#1) or single selection. */
+function getFeedbackForPrimaryChoice(question, optionIndex) {
+    const fb = question.feedback;
+    if (
+        Array.isArray(fb) &&
+        optionIndex >= 0 &&
+        optionIndex < fb.length &&
+        fb[optionIndex]
+    ) {
+        return fb[optionIndex];
+    }
+    return FALLBACK_FEEDBACK[Math.floor(Math.random() * FALLBACK_FEEDBACK.length)];
+}
+
 function displayQuestion() {
+    hideFreeTextPanel();
+    if (rankFooter) rankFooter.classList.add('hidden');
+    rankOrder = [];
+
     if (quizState.currentQuestionIndex >= quizState.questions.length) {
         showResults();
         return;
     }
 
-    const question = quizState.questions[quizState.currentQuestionIndex];
-
-    // Update counter and progress
+    const q = quizState.questions[quizState.currentQuestionIndex];
     currentQuestionSpan.textContent = quizState.currentQuestionIndex + 1;
     const progress = ((quizState.currentQuestionIndex + 1) / quizState.questions.length) * 100;
-    progressBar.style.width = progress + '%';
+    progressBar.style.width = `${progress}%`;
 
-    // Display question
-    questionText.textContent = question.question;
+    questionText.textContent = q.question;
+    updateQuizLayoutDenseClass(q);
 
-    // Hide feedback from previous question
     if (feedbackContainer) {
         feedbackContainer.className = 'feedback-box hidden';
         feedbackText.textContent = '';
     }
 
-    // Display options
     optionsContainer.innerHTML = '';
-    question.options.forEach((option, index) => {
-        const button = document.createElement('button');
-        button.className = 'option-btn';
-        button.textContent = option;
-        button.addEventListener('click', () => selectAnswer(index, question.correctIndex));
-        optionsContainer.appendChild(button);
+
+    if (q.type === 'rank') {
+        if (rankFooter) rankFooter.classList.remove('hidden');
+        if (rankConfirmBtn) rankConfirmBtn.disabled = rankOrder.length < 1;
+        q.options.forEach((label, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'option-btn';
+            button.textContent = label;
+            button.dataset.index = String(index);
+            button.addEventListener('click', () => onRankOptionClick(index, q));
+            optionsContainer.appendChild(button);
+        });
+        updateRankButtonStates();
+    } else {
+        q.options.forEach((label, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'option-btn';
+            button.textContent = label;
+            button.addEventListener('click', () => onSingleOptionClick(index, q));
+            optionsContainer.appendChild(button);
+        });
+    }
+}
+
+function onRankOptionClick(optionIndex, question) {
+    const pos = rankOrder.indexOf(optionIndex);
+    if (pos !== -1) {
+        rankOrder.splice(pos, 1);
+    } else if (rankOrder.length < 3) {
+        rankOrder.push(optionIndex);
+    }
+    updateRankButtonStates();
+    if (rankConfirmBtn) rankConfirmBtn.disabled = rankOrder.length < 1;
+}
+
+function updateRankButtonStates() {
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    buttons.forEach((btn) => {
+        btn.classList.remove('rank-1', 'rank-2', 'rank-3', 'selected');
+        const idx = parseInt(btn.dataset.index, 10);
+        const r = rankOrder.indexOf(idx);
+        if (r === 0) btn.classList.add('rank-1');
+        else if (r === 1) btn.classList.add('rank-2');
+        else if (r === 2) btn.classList.add('rank-3');
     });
 }
 
-// Select Answer
-function selectAnswer(selectedIndex, correctIndex) {
-    const optionButtons = document.querySelectorAll('.option-btn');
+function confirmRankAndAdvance() {
+    const q = quizState.questions[quizState.currentQuestionIndex];
+    if (q.type !== 'rank' || rankOrder.length < 1) return;
 
-    // Disable all buttons
-    optionButtons.forEach(btn => btn.disabled = true);
-
-    // Track answer
+    const rankedTexts = rankOrder.map((i) => q.options[i]);
     quizState.answers.push({
+        questionId: q.id,
         questionIndex: quizState.currentQuestionIndex,
-        selectedIndex: selectedIndex,
-        correctIndex: correctIndex,
-        isCorrect: selectedIndex === correctIndex
+        type: 'rank',
+        rankedIndices: [...rankOrder],
+        rankedLabels: rankedTexts,
     });
 
-    // Show feedback
-    const question = quizState.questions[quizState.currentQuestionIndex];
-    optionButtons[correctIndex].classList.add('correct');
+    if (rankConfirmBtn) rankConfirmBtn.disabled = true;
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    buttons.forEach((b) => (b.disabled = true));
 
-    if (selectedIndex !== correctIndex) {
-        optionButtons[selectedIndex].classList.add('wrong');
-        if (feedbackContainer) {
-            feedbackContainer.className = 'feedback-box wrong';
-            feedbackText.textContent = question.feedbackWrong || 'Λάθος απάντηση!';
-        }
-    } else {
-        quizState.score++;
-        if (feedbackContainer) {
-            feedbackContainer.className = 'feedback-box correct';
-            feedbackText.textContent = question.feedbackCorrect || 'Σωστά!';
-        }
+    if (feedbackContainer) {
+        feedbackContainer.className = 'feedback-box info';
+        feedbackText.textContent = getFeedbackForPrimaryChoice(q, rankOrder[0]);
     }
 
-    if (currentScoreSpan) currentScoreSpan.textContent = quizState.score;
-
-    // Move to next question after delay
     setTimeout(() => {
         quizState.currentQuestionIndex++;
         displayQuestion();
-    }, 5000); // Increased delay to 8 seconds so user can deeply read feedback
+    }, 2200);
 }
 
-// Show Results
+let pendingSingle = null;
+
+function onSingleOptionClick(selectedIndex, question) {
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    const label = question.options[selectedIndex];
+
+    if (optionNeedsFreeText(label)) {
+        pendingSingle = { selectedIndex, question, label };
+        buttons.forEach((b, i) => {
+            b.disabled = true;
+            b.classList.toggle('single-picked', i === selectedIndex);
+        });
+        showFreeTextPanel(label);
+        return;
+    }
+
+    finalizeSingleAnswer(selectedIndex, question, '');
+}
+
+function showFreeTextPanel(forLabel) {
+    if (!freeTextPanel || !freeTextInput) return;
+    freeTextLabel.textContent = 'Add a short note (optional)';
+    freeTextInput.value = '';
+    freeTextPanel.classList.remove('hidden');
+    freeTextInput.focus();
+}
+
+function hideFreeTextPanel() {
+    if (freeTextPanel) freeTextPanel.classList.add('hidden');
+    pendingSingle = null;
+}
+
+/** Close optional-text step and pick another option (Q10 Other / Q11 self-describe). */
+function cancelFreeTextAndReopenOptions() {
+    pendingSingle = null;
+    if (freeTextInput) freeTextInput.value = '';
+    if (freeTextPanel) freeTextPanel.classList.add('hidden');
+    optionsContainer.querySelectorAll('.option-btn').forEach((b) => {
+        b.disabled = false;
+        b.classList.remove('single-picked');
+    });
+}
+
+function submitFreeTextAndAdvance() {
+    if (!pendingSingle) return;
+    const extra = freeTextInput ? freeTextInput.value.trim() : '';
+    const { selectedIndex, question } = pendingSingle;
+    hideFreeTextPanel();
+    finalizeSingleAnswer(selectedIndex, question, extra);
+}
+
+function finalizeSingleAnswer(selectedIndex, question, freeText) {
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    buttons.forEach((b, i) => {
+        b.disabled = true;
+        b.classList.toggle('single-picked', i === selectedIndex);
+    });
+
+    quizState.answers.push({
+        questionId: question.id,
+        questionIndex: quizState.currentQuestionIndex,
+        type: 'single',
+        selectedIndex,
+        selectedLabel: question.options[selectedIndex],
+        freeText: freeText || undefined,
+    });
+
+    if (feedbackContainer) {
+        feedbackContainer.className = 'feedback-box info';
+        feedbackText.textContent = getFeedbackForPrimaryChoice(question, selectedIndex);
+    }
+
+    setTimeout(() => {
+        quizState.currentQuestionIndex++;
+        displayQuestion();
+    }, 2200);
+}
+
 function showResults() {
-    quizScreen.classList.remove('active');
+    quizScreenEl.classList.remove('active');
     resultsScreen.classList.add('active');
 
     resultUserName.textContent = quizState.userName;
-    finalScore.textContent = quizState.score;
-
-    const percentageValue = Math.round((quizState.score / quizState.questions.length) * 100);
-    percentage.textContent = `${percentageValue}% Σωστές απαντήσεις`;
-    submitStatus.innerHTML = '';
+    if (thankYouBlock) thankYouBlock.classList.remove('hidden');
+    submitStatus.textContent = '';
     submitStatus.className = 'submit-status';
 
-    // Mark as completed before submitting
     quizState.isCompleted = true;
-
-    // Automatically submit score at the end of the quiz
-    submitScore();
+    submitPollCompletion();
 }
 
-// Submit incomplete quiz (when user leaves before finishing) - async version
-function submitIncompleteQuiz() {
-    if (!quizState.userName || quizState.answers.length < 3 || quizState.isCompleted) {
-        return;
-    }
-
-    const payload = {
+function buildPayload(completed) {
+    const total = quizState.questions.length;
+    const answered = quizState.answers.length;
+    return {
+        projectId: PROJECT_ID,
         userName: quizState.userName,
-        score: quizState.score,
-        totalQuestions: quizState.answers.length, // Actual questions answered, not total
-        percentage: Math.round((quizState.score / quizState.answers.length) * 100),
+        answeredCount: answered,
+        pollTotal: total,
         timestamp: new Date().toISOString(),
         answers: quizState.answers,
-        completed: false // Mark as incomplete
+        completed,
     };
+}
 
-    const payloadString = JSON.stringify(payload);
-
-    // Use fetch with keepalive for reliable submission
+function submitIncompleteQuiz() {
+    if (!quizState.userName || quizState.answers.length < 2 || quizState.isCompleted) return;
+    const payload = buildPayload(false);
     fetch(quizState.googleAppsScriptUrl, {
         method: 'POST',
-        body: payloadString,
+        body: JSON.stringify(payload),
         mode: 'no-cors',
-        keepalive: true // Keep request alive even if page is closing
-    }).catch(err => console.error('Error submitting incomplete quiz:', err));
+        keepalive: true,
+    }).catch((err) => console.error(err));
 }
 
-// Submit incomplete quiz synchronously (for beforeunload - most reliable)
 function submitIncompleteQuizSync() {
-    if (!quizState.userName || quizState.answers.length < 3 || quizState.isCompleted) {
-        return;
-    }
-
-    const payload = {
-        userName: quizState.userName,
-        score: quizState.score,
-        totalQuestions: quizState.answers.length,
-        percentage: Math.round((quizState.score / quizState.answers.length) * 100),
-        timestamp: new Date().toISOString(),
-        answers: quizState.answers,
-        completed: false
-    };
-
-    const payloadString = JSON.stringify(payload);
-
-    // Use synchronous XMLHttpRequest for beforeunload (most reliable for page unload)
+    if (!quizState.userName || quizState.answers.length < 2 || quizState.isCompleted) return;
+    const payload = buildPayload(false);
     try {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', quizState.googleAppsScriptUrl, false); // false = synchronous
+        xhr.open('POST', quizState.googleAppsScriptUrl, false);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(payloadString);
+        xhr.send(JSON.stringify(payload));
     } catch (err) {
-        console.error('Error submitting incomplete quiz (sync):', err);
+        console.error(err);
     }
 }
 
-// Submit Score to Google Sheet
-async function submitScore() {
-    // Make sure user added URL
-    if (quizState.googleAppsScriptUrl === 'YOUR_APP_SCRIPT_URL_HERE') {
-        alert('Error: The Google Apps Script URL has not been configured in script.js');
+async function submitPollCompletion() {
+    if (
+        !quizState.googleAppsScriptUrl ||
+        quizState.googleAppsScriptUrl === 'YOUR_APP_SCRIPT_URL_HERE' ||
+        quizState.googleAppsScriptUrl === 'TBD'
+    ) {
+        submitStatus.textContent =
+            'Responses could not be sent: configure the Google Apps Script URL in script.js.';
+        submitStatus.classList.add('error');
         return;
     }
 
-    // Disable button and show loading
-    // submitBtn.disabled = true;
-    // submitStatus.textContent = 'Submitting...';
-    // submitStatus.className = 'submit-status';
-
     try {
-        const payload = {
-            userName: quizState.userName,
-            score: quizState.score,
-            totalQuestions: quizState.questions.length,
-            percentage: Math.round((quizState.score / quizState.questions.length) * 100),
-            timestamp: new Date().toISOString(),
-            answers: quizState.answers,
-            completed: true // Mark as completed
-        };
-
-        // NOTE: Submission happens silently in the background at the end of the quiz.
-        // The user is not notified and is not redirected automatically.
-        const response = await fetch(quizState.googleAppsScriptUrl, {
+        await fetch(quizState.googleAppsScriptUrl, {
             method: 'POST',
-            body: JSON.stringify(payload),
-            mode: 'no-cors'
+            body: JSON.stringify(buildPayload(true)),
+            mode: 'no-cors',
         });
-
-        submitStatus.innerHTML = submitStatus.innerHTML + '<br>✓ Ευχαριστούμε που συμμετείχες!';
-        // submitStatus.className = 'submit-status success';
-
-        // setTimeout(() => {
-        //     retakeQuiz();
-        // }, 2000);
+        submitStatus.textContent = 'Your responses were submitted. Thank you.';
+        submitStatus.classList.add('success');
     } catch (error) {
-        console.error('Error submitting score:', error);
-        // submitStatus.textContent = '✗ Error submitting score. Please try again.';
-        // submitStatus.className = 'submit-status error';
-        // submitBtn.disabled = false;
+        console.error(error);
+        submitStatus.textContent = 'Something went wrong while sending responses. Staff can still use on-device notes if needed.';
+        submitStatus.classList.add('error');
     }
 }
 
-// Retake Quiz
 function retakeQuiz() {
-
-    // Reset state
     quizState.currentQuestionIndex = 0;
-    quizState.score = 0;
     quizState.answers = [];
     quizState.isCompleted = false;
     userNameInput.value = '';
     submitStatus.textContent = '';
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit Score';
+    submitStatus.className = 'submit-status';
+    hideFreeTextPanel();
+    rankOrder = [];
+    if (thankYouBlock) thankYouBlock.classList.add('hidden');
 
-    // Show start screen
     resultsScreen.classList.remove('active');
     startScreen.classList.add('active');
     userNameInput.focus();

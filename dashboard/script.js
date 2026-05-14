@@ -3,7 +3,11 @@
 // (It should be the exact same URL you used in your main script.js)
 // ======================================================================
 // const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbxc99n668g30Tt35xUCWyHIWy2S4NGlpZ-pLkjqdkAFgKNcra1RgCwsfno81vreD4-JAQ/exec';
-const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzV4METVPHfnwMna8VsBDMskn8cZ9-Lokj_-SQHLPABGkBcC_oNn2LjcoUXs6EncHloDg/exec';
+const googleAppsScriptUrl =
+    'https://script.google.com/macros/s/AKfycbymAWalVqzdDRN7pD3PyGytcBGVcE8iJkGLeaBa-o7V_tnw1a1voiUZpEK6j7uPDkUg/exec';
+
+/** Must match poll in script.js — filters GET results when the sheet has a "Project ID" column. */
+const DASHBOARD_PROJECT_ID = '6G-EWOC';
 // DOM Elements
 const loadingView = document.getElementById('loadingView');
 const dashboardView = document.getElementById('dashboardView');
@@ -33,13 +37,20 @@ let dashboardData = null; // Store dashboard data for tab switching
 
 // Fetch dashboard data
 async function fetchDashboardData() {
-    if (googleAppsScriptUrl === 'YOUR_APP_SCRIPT_URL_HERE' || !googleAppsScriptUrl) {
+    if (
+        !googleAppsScriptUrl ||
+        googleAppsScriptUrl === 'YOUR_APP_SCRIPT_URL_HERE' ||
+        googleAppsScriptUrl === 'TBD'
+    ) {
         showError('Please configure your Google Apps Script URL in dashboard/script.js');
         return;
     }
 
     try {
-        const response = await fetch(googleAppsScriptUrl);
+        const sep = googleAppsScriptUrl.indexOf('?') === -1 ? '?' : '&';
+        const response = await fetch(
+            `${googleAppsScriptUrl}${sep}projectId=${encodeURIComponent(DASHBOARD_PROJECT_ID)}`
+        );
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -74,10 +85,8 @@ function updateDashboard(data) {
     // Set initial metrics (default to completed)
     updateMetrics(true); // true = show completed metrics
 
-    // Check if we have a total questions max reference (for clean UI).
-    // Assuming 10 from the main game logic.
-    totalPlayersVal.setAttribute('title', 'Total lifetime completions');
-    averageScoreVal.setAttribute('title', 'Average score out of 10');
+    totalPlayersVal.setAttribute('title', 'Completed submissions (6G-EWOC)');
+    averageScoreVal.setAttribute('title', 'Average number of questions answered (completed only)');
 
   // Build Leaderboards (separate for completed and incomplete)
     leaderboardList.innerHTML = '';
@@ -196,11 +205,12 @@ function createLeaderboardItem(player, rank, isIncomplete) {
   scoreSpan.className = 'lb-score';
   if (isIncomplete) {
     scoreSpan.classList.add('incomplete-score');
-    // For incomplete quizzes, show "score/total" format (e.g., "2/5")
-    const totalQuestions = player.totalQuestions || (player.answers && player.answers.length) || 0;
-    scoreSpan.textContent = totalQuestions > 0 ? `${player.score}/${totalQuestions}` : player.score;
+    const pollT = player.pollTotal || 0;
+    const answered = player.answeredCount != null ? player.answeredCount : player.score;
+    scoreSpan.textContent =
+      pollT > 0 ? `${answered}/${pollT}` : String(answered != null ? answered : player.score || '');
   } else {
-    scoreSpan.textContent = player.score;
+    scoreSpan.textContent = player.score != null ? String(player.score) : '';
   }
 
   li.appendChild(rankSpan);

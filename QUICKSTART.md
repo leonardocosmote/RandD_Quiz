@@ -86,10 +86,9 @@ git push -u origin main
 ## ✅ Step 3: Test the Connection
 
 1. Open your live quiz link
-2. Enter your name and click **Start Quiz**
-3. Take the quiz
-4. On the results page, click **Submit Score**
-5. Check your Google Sheet - the data should appear instantly! ✨
+2. Enter your name and click **Start**
+3. Complete the poll (rank questions: pick 1–3 options in order, then **Continue**)
+4. On the thank-you page, responses are sent automatically; check your Google Sheet ✨
 
 ---
 
@@ -205,7 +204,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 ## 📚 Next Steps
 
-- Add more questions to `questions.json`
+- Add or edit questions in `questions.json` (see README for format). Optionally keep `questions.md` in sync as a readable outline.
 - Change the color scheme in `styles.css`
 - Customize the Welcome message in `index.html`
 - Share your quiz URL with others!
@@ -220,7 +219,7 @@ Your quiz is now live and collecting data. Check [README.md](README.md) for adva
 
 1. **Check Troubleshooting section above**
 2. **Browser console** (F12 → Console tab) shows JavaScript errors
-3. **Network tab** (F12 → Network) shows if questions.json loads
+3. **Network tab** (F12 → Network) shows if `questions.json` loads
 4. **Apps Script Execution log** shows server-side errors
 5. All files should be in the same GitHub repository folder
 
