@@ -6,7 +6,7 @@
     "options": ["Yes", "No", "Only vaguely"],
     "feedback": [
       "Nice — you already had 6G-EWOC on your radar before today.",
-      "Thanks for the candour; we hope the next minutes turn that into a clearer picture.",
+      "we hope the next minutes turn that into a clearer picture.",
       "Fair enough — a little name recognition is already a good starting point for a short conversation."
     ]
   },
@@ -62,7 +62,7 @@
   },
   {
     "id": 5,
-    "type": "rank",
+    "type": "single",
     "question": "What should AI manage first in future 6G networks?",
     "options": [
       "Resource allocation",
@@ -85,10 +85,10 @@
     "question": "Would you trust AI to autonomously manage future mobility?",
     "options": ["Yes", "Yes, with human oversight", "Only in limited cases", "No"],
     "feedback": [
-      "Full autonomy as your top answer — bold, and a useful signal for how fast you think policy and technology can move together.",
-      "Humans in the loop first — that tracks how serious pilots are framed today: capable automation, visible accountability.",
-      "Limited cases on top — a cautious, stepwise view that fits many regulators’ comfort zones around mobility AI.",
-      "A firm “not yet” in first place — scepticism here is data too; it keeps expectations and safety models honest."
+      "Full autonomy! Bold, and a useful signal for how fast you think policy and technology can move together.",
+      "Humans in the loop! That tracks how serious pilots are framed today: capable automation, visible accountability.",
+      "Limited cases! Cautious, stepwise view that fits many regulators’ comfort zones around mobility AI.",
+      "A firm “not yet”! Scepticism here is data too; it keeps expectations and safety models honest."
     ]
   },
   {
@@ -112,7 +112,7 @@
   },
   {
     "id": 8,
-    "type": "rank",
+    "type": "single",
     "question": "What is the most important sustainability metric for 6G systems?",
     "options": [
       "Energy per bit",
@@ -123,15 +123,15 @@
     ],
     "feedback": [
       "Bits-per-joule thinking — you’d measure what really counts for climate-aware networks.",
-      "Lifecycle first — cradle-to-grave infrastructure is harder to spreadsheet, but harder to greenwash too.",
-      "Renewables on top — matching traffic to clean electrons is where policy, markets, and engineering meet.",
+      "Cradle-to-grave infrastructure is harder to spreadsheet, but harder to greenwash too.",
+      "Matching traffic to clean electrons is where policy, markets, and engineering meet.",
       "Reuse in pole position — circular hardware thinking challenges the “replace every cycle” habit in ICT.",
-      "Holistic efficiency leads — still the KPI many operators know how to defend in boardrooms and public consultations."
+      "Holistic efficiency leads! Still the KPI many operators know how to defend in boardrooms and public consultations."
     ]
   },
   {
     "id": 9,
-    "type": "rank",
+    "type": "single",
     "question": "What matters most for citizens in future networks?",
     "options": [
       "Reliability",
@@ -167,18 +167,18 @@
       "Other (please specify):"
     ],
     "feedback": [
-      "Optical and wireless in your corner — you’re speaking the physical layer’s language.",
-      "AI and data-driven networking — the stack where models, traffic, and policy now meet every week.",
-      "Sensing and positioning — where the map of the world and the map of the network have to agree.",
-      "Edge and cloud — the architectural trade space every serious 6G trial still argues about.",
-      "Mobility and transport — a domain where standards, safety, and spectacle share the same stage.",
-      "Security and privacy — thank you; that lens keeps the rest of the roadmap honest.",
-      "Architecture and resources — someone has to hold the end-to-end view when silos multiply.",
-      "Sustainability and green ICT — your answers will read differently through that filter, and that’s valuable.",
-      "Policy and standardisation — the slow gear that still decides what ships in a decade.",
-      "Research and academia — curiosity with citations; we’re glad you stopped at the booth.",
-      "Industry and product — pressure-tested views from people who ship are gold for a project like EWOC.",
-      "Thanks for naming your own lane — “Other” often carries the most specific insight."
+      "You’re speaking the physical layer’s language.",
+      "The stack where models, traffic, and policy now meet every week.",
+      "Where the map of the world and the map of the network have to agree.",
+      "The architectural trade space every serious 6G trial still argues about.",
+      "A domain where standards, safety, and spectacle share the same stage.",
+      "That lens keeps the rest of the roadmap honest.",
+      "Someone has to hold the end-to-end view when silos multiply.",
+      "Your answers will read differently through that filter, and that’s valuable.",
+      "The slow gear that still decides what ships in a decade.",
+      "Curiosity with citations; we’re glad you stopped at the booth.",
+      "Pressure-tested views from people who ship are gold for a project like EWOC.",
+      "“Other” often carries the most specific insight."
     ]
   },
   {

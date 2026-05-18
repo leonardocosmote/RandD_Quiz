@@ -69,6 +69,7 @@ function initializeSheet() {
       "Timestamp",
       "Project ID",
       "User Name",
+      "Email",
       "Gender response",
       "Answered Count",
       "Poll Total",
@@ -93,6 +94,48 @@ function isLegacyQuizHeaders(headers) {
   return headers.indexOf("Score") !== -1 && headers.indexOf("Total Questions") !== -1;
 }
 
+/** Add Email column after User Name on sheets created before this field existed. */
+function ensureEmailColumn(sheet, headers) {
+  var col = headerIndexMap(headers);
+  if (col["Email"] !== undefined) return headers;
+  var userNameIdx = col["User Name"];
+  if (userNameIdx === undefined) return headers;
+  sheet.insertColumnAfter(userNameIdx + 1);
+  sheet.getRange(1, userNameIdx + 2).setValue("Email");
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+}
+
+function pollEmailFromData(data) {
+  if (!data || data.email === undefined || data.email === null) return "";
+  return String(data.email).trim();
+}
+
+function appendNewPollRow(sheet, data, timestamp, userName, answers, genderResponse) {
+  var answeredCount =
+    data.answeredCount !== undefined && data.answeredCount !== null
+      ? Number(data.answeredCount)
+      : answers.length;
+  var pollTotal =
+    data.pollTotal !== undefined && data.pollTotal !== null
+      ? Number(data.pollTotal)
+      : answeredCount;
+  var completed = data.completed !== undefined ? data.completed : true;
+  var projectId = data.projectId || "";
+  var email = pollEmailFromData(data);
+
+  sheet.appendRow([
+    timestamp,
+    projectId,
+    userName,
+    email,
+    genderResponse,
+    answeredCount,
+    pollTotal,
+    completed ? "Yes" : "No",
+    JSON.stringify(answers),
+  ]);
+}
+
 // Main doPost function - receives data from the quiz app
 function doPost(e) {
   try {
@@ -111,27 +154,8 @@ function doPost(e) {
     var genderResponse = extractGenderResponse(answers);
 
     if (isNewPollHeaders(headers)) {
-      var projectId = data.projectId || "";
-      var answeredCount =
-        data.answeredCount !== undefined && data.answeredCount !== null
-          ? Number(data.answeredCount)
-          : answers.length;
-      var pollTotal =
-        data.pollTotal !== undefined && data.pollTotal !== null
-          ? Number(data.pollTotal)
-          : answeredCount;
-      var completed = data.completed !== undefined ? data.completed : true;
-
-      sheet.appendRow([
-        timestamp,
-        projectId,
-        userName,
-        genderResponse,
-        answeredCount,
-        pollTotal,
-        completed ? "Yes" : "No",
-        answersJSON,
-      ]);
+      headers = ensureEmailColumn(sheet, headers);
+      appendNewPollRow(sheet, data, timestamp, userName, answers, genderResponse);
     } else if (isLegacyQuizHeaders(headers)) {
       var score = data.score || 0;
       var totalQuestions = data.totalQuestions || 0;
@@ -156,26 +180,7 @@ function doPost(e) {
           "Unrecognized sheet headers with existing rows. Add a new tab or clear the sheet, then redeploy."
         );
       }
-      var projectId3 = data.projectId || "";
-      var answeredCount3 =
-        data.answeredCount !== undefined && data.answeredCount !== null
-          ? Number(data.answeredCount)
-          : answers.length;
-      var pollTotal3 =
-        data.pollTotal !== undefined && data.pollTotal !== null
-          ? Number(data.pollTotal)
-          : answeredCount3;
-      var completed3 = data.completed !== undefined ? data.completed : true;
-      sheet.appendRow([
-        timestamp,
-        projectId3,
-        userName,
-        genderResponse,
-        answeredCount3,
-        pollTotal3,
-        completed3 ? "Yes" : "No",
-        answersJSON,
-      ]);
+      appendNewPollRow(sheet, data, timestamp, userName, answers, genderResponse);
     }
 
     return ContentService.createTextOutput(
@@ -204,6 +209,7 @@ function testDoPost() {
       contents: JSON.stringify({
         projectId: "6G-EWOC",
         userName: "Test User",
+        email: "visitor@example.com",
         answeredCount: 11,
         pollTotal: 11,
         completed: true,
@@ -228,7 +234,7 @@ function testDoPost() {
 /**
  * ADVANCED: Create a separate results sheet for analysis
  * Uncomment to use - creates formulas to summarize quiz data
- * (Column letters assume the new poll header row: A Timestamp … H Answers JSON.)
+ * (Column letters assume the new poll header row: A Timestamp … I Answers JSON.)
  */
 function createAnalyticsSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
