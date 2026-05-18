@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6G-EWOC — EuCNC poll</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+    <button id="qrCodeBtn" class="qr-code-btn" title="Share poll link">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="5" height="5"></rect>
+            <rect x="16" y="3" width="5" height="5"></rect>
+            <rect x="3" y="16" width="5" height="5"></rect>
+            <line x1="9" y1="5" x2="9" y2="6"></line>
+            <line x1="9" y1="18" x2="9" y2="19"></line>
+            <line x1="5" y1="9" x2="6" y2="9"></line>
+            <line x1="18" y1="9" x2="19" y2="9"></line>
+            <rect x="11" y="11" width="2" height="2"></rect>
+        </svg>
+    </button>
+
+    <div id="qrCodeModal" class="qr-modal hidden">
+        <div class="qr-modal-content">
+            <button type="button" class="qr-modal-close" id="qrModalClose">&times;</button>
+            <h3>Scan to open this poll</h3>
+            <div id="qrcode"></div>
+            <p class="qr-link-text" id="qrLinkDisplay"></p>
+        </div>
+    </div>
+
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div id="startScreen" class="view active">
+            <div class="header">
+                <h1>6G-EWOC</h1>
+                <h4>Short visitor poll EuCNC</h4>
+            </div>
+            <p class="start-description" style="color: #8b949e; font-size: 16px;">
+                A few questions on awareness, priorities, and background. There are no right or wrong answers.
+            </p>
+            <br>
+            <div class="input-group">
+                <input type="text" id="userName" placeholder="Your name or initials" required maxlength="80">
+                <p id="nameError" class="error hidden">Please enter your name or initials to continue.</p>
+            </div>
+            <button type="button" id="startBtn" class="btn primary-btn">Start</button>
+        </div>
+
+        <div id="quizScreen" class="view">
+            <div class="quiz-header">
+                <div class="progress-container">
+                    <span id="question-counter">Question <span id="currentQuestion">1</span> of <span
+                            id="totalQuestions">11</span></span>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="question-container">
+                <h2 id="question-text"></h2>
+            </div>
+
+            <div id="optionsContainer" class="options-grid"></div>
+
+            <div id="freeTextPanel" class="free-text-panel hidden">
+                <label id="freeTextLabel" for="freeTextInput">Add a short note (optional)</label>
+                <textarea id="freeTextInput" rows="3" maxlength="500" placeholder="Optional"></textarea>
+                <div class="free-text-actions">
+                    <button type="button" id="freeTextBackBtn" class="btn secondary-btn">Choose a different answer</button>
+                    <button type="button" id="freeTextContinueBtn" class="btn primary-btn">Continue</button>
+                </div>
+            </div>
+
+            <div id="rankFooter" class="rank-footer hidden">
+                <p class="rank-hint">Rank up to <strong>three</strong> choices: tap in order (1 = highest priority). Tap again to remove. You can press <strong>Continue</strong> after <strong>one</strong> or <strong>two</strong> picks if you prefer.</p>
+                <button type="button" id="rankConfirmBtn" class="btn primary-btn" disabled>Continue</button>
+            </div>
+
+            <div id="feedbackContainer" class="feedback-box hidden">
+                <p id="feedbackText"></p>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="view">
+            <div class="results-content">
+                <div id="thankYouBlock">
+                    <h2>Thank you</h2>
+                    <p style="color: #8b949e; margin-bottom: 16px;">
+                        Your answers help us understand interest and opinions around <strong>6G-EWOC</strong>.
+                        There is no score — we appreciate you taking part.
+                    </p>
+                    <p class="result-msg"><span id="resultUserName"></span></p>
+                </div>
+
+                <div style="display:flex; flex-direction: column; gap:10px; margin-top:20px;">
+                    <div style="display:flex; gap:10px; width: 100%;">
+                        <button type="button" id="submitBtn" class="btn primary-btn" style="display:none;">Submit</button>
+                        <button type="button" id="retryBtn" class="btn secondary-btn" style="flex: 1;">Answer again</button>
+                    </div>
+                </div>
+                <p id="submitStatus" class="submit-status" role="status"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var el = document.getElementById('qrLinkDisplay');
+            if (el) el.textContent = window.location.href.split('?')[0];
+        })();
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

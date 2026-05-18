@@ -1,0 +1,203 @@
+[
+  {
+    "id": 1,
+    "type": "single",
+    "question": "Had you heard about 6G-EWOC before today?",
+    "options": ["Yes", "No", "Only vaguely"],
+    "feedback": [
+      "Nice — you already had 6G-EWOC on your radar before today.",
+      "Thanks for the candour; we hope the next minutes turn that into a clearer picture.",
+      "Fair enough — a little name recognition is already a good starting point for a short conversation."
+    ]
+  },
+  {
+    "id": 2,
+    "type": "rank",
+    "question": "Which 6G-EWOC technology interests you most?",
+    "options": [
+      "Optical wireless communication",
+      "AI orchestration",
+      "Integrated sensing",
+      "Edge/cloud intelligence",
+      "Smart mobility applications"
+    ],
+    "feedback": [
+      "Light and fibre at the top of your list — optical wireless is one of the threads where 6G research is moving fastest.",
+      "Orchestration first — you’re thinking about how complex networks stay coherent when everything becomes programmable.",
+      "Sensing in the lead — tying the physical world to the digital layer is exactly where integrated sensing earns its keep.",
+      "You’d start from the middle ground — edge and cloud intelligence is where latency, cost, and control meet in practice.",
+      "Mobility up front — moving people and goods smarter is a story 6G keeps coming back to, and you’ve put it first."
+    ]
+  },
+  {
+    "id": 3,
+    "type": "rank",
+    "question": "Which sensing capability will create the most value in 6G networks?",
+    "options": [
+      "Traffic awareness",
+      "Environmental monitoring",
+      "Precision positioning",
+      "Infrastructure diagnostics",
+      "Crowd management"
+    ],
+    "feedback": [
+      "If traffic and roads are your #1, you’re in good company — smarter corridors and safer mobility are a headline use case for network sensing.",
+      "Planet-scale awareness first — environmental sensing lines up with how many European 6G roadmaps talk about sustainability and resilience.",
+      "Precision at the top — when centimetres matter, industry, logistics, and urban services all lean on that kind of sensing depth.",
+      "Infrastructure health in pole position — quiet, always-on diagnostics are what keeps critical networks boring in the best way.",
+      "Crowd and public space first — a sensitive area where technology, policy, and trust have to move together."
+    ]
+  },
+  {
+    "id": 4,
+    "type": "single",
+    "question": "Where should intelligence primarily reside in 6G systems?",
+    "options": ["Edge devices", "Edge cloud", "Central cloud", "Distributed hybrid architecture"],
+    "feedback": [
+      "You’d push brains right next to the action — on-device intelligence keeps latency low and data local.",
+      "Regional edge cloud as your anchor — enough scale to optimise, close enough to matter for real-time workloads.",
+      "Central cloud still carries the flag for you — global coordination, heavy models, and strong governance patterns.",
+      "Hybrid wins your top slot — that mirrors how production networks evolve: no single tier does everything alone."
+    ]
+  },
+  {
+    "id": 5,
+    "type": "rank",
+    "question": "What should AI manage first in future 6G networks?",
+    "options": [
+      "Resource allocation",
+      "Mobility management",
+      "Security monitoring",
+      "Energy optimization",
+      "Predictive maintenance"
+    ],
+    "feedback": [
+      "Efficiency first — squeezing more from spectrum, compute, and capacity is a very operator-shaped priority.",
+      "Mobility at the front — keeping sessions seamless on the move is still one of the hardest problems at scale.",
+      "Security monitoring on top — with attack surfaces widening, many teams would agree that vigilance can’t wait.",
+      "Energy optimisation as #1 — a stance that matches Europe’s push for greener, leaner digital infrastructure.",
+      "Predictive maintenance leads for you — reliability engineering with a crystal ball, before faults become headlines."
+    ]
+  },
+  {
+    "id": 6,
+    "type": "single",
+    "question": "Would you trust AI to autonomously manage future mobility?",
+    "options": ["Yes", "Yes, with human oversight", "Only in limited cases", "No"],
+    "feedback": [
+      "Full autonomy as your top answer — bold, and a useful signal for how fast you think policy and technology can move together.",
+      "Humans in the loop first — that tracks how serious pilots are framed today: capable automation, visible accountability.",
+      "Limited cases on top — a cautious, stepwise view that fits many regulators’ comfort zones around mobility AI.",
+      "A firm “not yet” in first place — scepticism here is data too; it keeps expectations and safety models honest."
+    ]
+  },
+  {
+    "id": 7,
+    "type": "rank",
+    "question": "What will be the defining cybersecurity challenge for 6G?",
+    "options": [
+      "AI-driven attacks",
+      "Quantum threats",
+      "Massive device scale",
+      "Privacy protection",
+      "Supply-chain trust"
+    ],
+    "feedback": [
+      "Offensive AI in the lead — the attacker–defender race is only getting more automated; your instinct matches the briefings.",
+      "Quantum on your mind — long-horizon cryptography and trust transitions are finally on every CISO’s slide deck.",
+      "Scale as the enemy — once endpoints number in the billions, “secure enough” has to be redefined from the ground up.",
+      "Privacy first — a very European framing: rights-by-design alongside throughput and coverage.",
+      "Supply-chain trust at the top — components and vendors are now part of the threat model, not an afterthought."
+    ]
+  },
+  {
+    "id": 8,
+    "type": "rank",
+    "question": "What is the most important sustainability metric for 6G systems?",
+    "options": [
+      "Energy per bit",
+      "Infrastructure lifecycle impact",
+      "Renewable integration",
+      "Hardware reuse",
+      "Network efficiency"
+    ],
+    "feedback": [
+      "Bits-per-joule thinking — you’d measure what really counts for climate-aware networks.",
+      "Lifecycle first — cradle-to-grave infrastructure is harder to spreadsheet, but harder to greenwash too.",
+      "Renewables on top — matching traffic to clean electrons is where policy, markets, and engineering meet.",
+      "Reuse in pole position — circular hardware thinking challenges the “replace every cycle” habit in ICT.",
+      "Holistic efficiency leads — still the KPI many operators know how to defend in boardrooms and public consultations."
+    ]
+  },
+  {
+    "id": 9,
+    "type": "rank",
+    "question": "What matters most for citizens in future networks?",
+    "options": [
+      "Reliability",
+      "Maximum data privacy",
+      "Ultra-fast everywhere: Performance / Speed",
+      "Go green: Sustainability and low energy use",
+      "Affordability"
+    ],
+    "feedback": [
+      "Always-on expectation first — outages are what people remember; your answer reads very “utility-grade”.",
+      "Privacy at the top — control over personal data is a headline value in EU digital policy, and you’ve aligned with it.",
+      "Speed still wins your ranking — throughput and latency remain the promise citizens ask about first at demos.",
+      "Green first — sustainability as part of the social licence to roll out infrastructure is a strong 6G-era signal.",
+      "Affordability leads — inclusion matters as much as peak performance; networks nobody can pay for help no one."
+    ]
+  },
+  {
+    "id": 10,
+    "type": "single",
+    "question": "Which area best reflects your main area of expertise or professional activity?",
+    "options": [
+      "Optical and wireless communication technologies",
+      "Artificial intelligence and data-driven networking",
+      "Integrated sensing and positioning systems",
+      "Edge / cloud computing and distributed intelligence",
+      "Smart mobility and transportation systems",
+      "Cybersecurity and privacy",
+      "Network architecture and resource management",
+      "Sustainability, energy efficiency, and green ICT",
+      "Policy, standardization, or regulation",
+      "Research and academia",
+      "Industry and product development",
+      "Other (please specify):"
+    ],
+    "feedback": [
+      "Optical and wireless in your corner — you’re speaking the physical layer’s language.",
+      "AI and data-driven networking — the stack where models, traffic, and policy now meet every week.",
+      "Sensing and positioning — where the map of the world and the map of the network have to agree.",
+      "Edge and cloud — the architectural trade space every serious 6G trial still argues about.",
+      "Mobility and transport — a domain where standards, safety, and spectacle share the same stage.",
+      "Security and privacy — thank you; that lens keeps the rest of the roadmap honest.",
+      "Architecture and resources — someone has to hold the end-to-end view when silos multiply.",
+      "Sustainability and green ICT — your answers will read differently through that filter, and that’s valuable.",
+      "Policy and standardisation — the slow gear that still decides what ships in a decade.",
+      "Research and academia — curiosity with citations; we’re glad you stopped at the booth.",
+      "Industry and product — pressure-tested views from people who ship are gold for a project like EWOC.",
+      "Thanks for naming your own lane — “Other” often carries the most specific insight."
+    ]
+  },
+  {
+    "id": 11,
+    "type": "single",
+    "question": "To help us understand participation trends across different technology domains, we invite you to optionally share your gender. What is your gender?",
+    "options": [
+      "Woman",
+      "Man",
+      "Non-binary",
+      "Prefer to self-describe:",
+      "Prefer not to say"
+    ],
+    "feedback": [
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you — recorded in aggregate only, to help us read participation fairly.",
+      "Thank you for describing that in your own words — we’ll treat it carefully and only at aggregate level.",
+      "Understood — we’ll rely on your other answers for the technical picture; thank you for taking part."
+    ]
+  }
+]
