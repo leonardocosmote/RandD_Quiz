@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Web App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+    <!-- QR Code Button (Floating) -->
+    <button id="qrCodeBtn" class="qr-code-btn" title="Κοινοποίηση Quiz">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="5" height="5"></rect>
+            <rect x="16" y="3" width="5" height="5"></rect>
+            <rect x="3" y="16" width="5" height="5"></rect>
+            <line x1="9" y1="5" x2="9" y2="6"></line>
+            <line x1="9" y1="18" x2="9" y2="19"></line>
+            <line x1="5" y1="9" x2="6" y2="9"></line>
+            <line x1="18" y1="9" x2="19" y2="9"></line>
+            <rect x="11" y="11" width="2" height="2"></rect>
+            <rect x="11" y="11" width="2" height="2"></rect>
+        </svg>
+    </button>
+
+    <!-- QR Code Modal -->
+    <div id="qrCodeModal" class="qr-modal hidden">
+        <div class="qr-modal-content">
+            <button class="qr-modal-close" id="qrModalClose">&times;</button>
+            <h3>Σαρώστε για να ανοίξετε το Quiz</h3>
+            <div id="qrcode"></div>
+            <p class="qr-link-text">https://leonardocosmote.github.io/quiz/</p>
+        </div>
+    </div>
+
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="view active">
+            <div class="header">
+                <h1>🎉 Καλώς ήλθες στο Quiz του R&D!</h1>
+                <h4>Πόσο καλά γνωρίζεις το R&D του Ομίλου ΟΤΕ;</h4>
+            </div>
+            <p class="start-description" style="color: #8b949e; font-size: 16px;">
+                Απάντησε σε 10 σύντομες ερωτήσεις και δες live πώς τα πήγες!<br>
+                <!-- Μάθε τι κάνει το <span style="font-weight: bold; color: aliceblue;">R&D</span>, σε ποιες τεχνολογίες
+                δραστηριοποιείται και ποιες λύσεις αναπτύσσει. -->
+            </p>
+            <br>
+            <div class="input-group">
+                <input type="text" id="userName" placeholder="Ονομάζομαι ..." required>
+                <p id="nameError" class="error hidden">Παρακαλούμε γράψε το όνομά σου πριν ξεκινήσεις το quiz!</p>
+            </div>
+            <button id="startBtn" class="btn primary-btn">Ξεκινήσε το Quiz</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="view">
+            <div class="quiz-header">
+                <div class="progress-container">
+                    <span id="question-counter">Ερώτηση <span id="currentQuestion">1</span> από <span
+                            id="totalQuestions">5</span></span>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="score-display">Βαθμολογία: <span id="currentScore">0</span></div>
+            </div>
+            <div class="question-container">
+                <h2 id="question-text"></h2>
+            </div>
+            <div id="optionsContainer" class="options-grid"></div>
+            <div id="feedbackContainer" class="feedback-box hidden">
+                <p id="feedbackText"></p>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="view">
+            <div class="results-content">
+                <h2>🎉 Μπράβο!</h2>
+                <p style="color: #8b949e; margin-bottom: 20px;">Ολοκλήρωσες το Quiz του <span
+                        style="font-weight: bold; color: aliceblue;">R&D</span>!<br>Τώρα ξέρεις πολύ
+                    περισσότερα για εμάς!</p>
+
+                <div class="final-score-circle">
+                    <div id="final-score">0</div>
+                    <div class="total">από <span id="totalScore">5</span></div>
+                </div>
+                <p class="result-msg" style="margin-top: 15px;"><span id="resultUserName"></span></p>
+                <p class="percentage" id="percentage"></p>
+
+                <div style="display:flex; flex-direction: column; gap:10px; margin-top:20px;">
+                    <div style="display:flex; gap:10px; width: 100%;">
+                        <!-- Submit button kept for status logic but hidden (auto-submit is used) -->
+                        <button id="submitBtn" class="btn primary-btn" style="flex: 1; display:none;">Υποβολή
+                            Βαθμολογίας</button>
+                        <button id="retryBtn" class="btn secondary-btn" style="flex: 1;">Ξανακάνε το Quiz</button>
+                    </div>
+                    <!-- <div style="display:flex; gap:10px; width: 100%;">
+                        <a href="https://www.cosmote.gr/static/otegroup/el/page/ereuna_kai_kainotomia" target="_blank"
+                            class="btn secondary-btn" style="flex: 1; text-align: center; text-decoration: none;">Κάνε
+                            click για να μάθεις περισσότερα για τις δράσεις του R&D</a>
+                    </div> -->
+                    <div style="display:flex; gap:10px; width: 100%;">
+                        <a href="https://www.cosmote.gr/static/otegroup/el/page/ereuna_kai_kainotomia" target="_blank"
+                            class="btn secondary-btn" style="flex: 1; text-align: center; text-decoration: none;">Μάθε
+                            περισσότερα για εμάς</a>
+                    </div>
+                </div>
+                <br>
+                <p id="submitStatus" class="submit-status"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

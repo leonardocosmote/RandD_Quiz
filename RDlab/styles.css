@@ -1,0 +1,764 @@
+:root {
+    --bg-color: #0d1117;
+    --text-color: #c9d1d9;
+    --primary-color: #4462a2;
+    /* Cosmote Blue */
+    --primary-hover: #314b8a;
+    /* Darker Cosmote Blue for hover */
+    --accent-color: #659b3e;
+    /* Cosmote Green */
+    --surface-color: rgba(22, 27, 34, 0.65);
+    --surface-border: rgba(48, 54, 61, 0.5);
+    --correct-color: #659b3e;
+    /* Matched to Cosmote Green */
+    --wrong-color: #f85149;
+    --glass-blur: blur(16px);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Background animated shapes */
+.background-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    animation: float 20s infinite ease-in-out alternate;
+}
+
+.shape-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--primary-color);
+    top: -10%;
+    left: -10%;
+    animation-delay: 0s;
+}
+
+.shape-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--accent-color);
+    bottom: -20%;
+    right: -10%;
+    animation-delay: -5s;
+}
+
+.shape-3 {
+    width: 300px;
+    height: 300px;
+    background: #e34c26;
+    top: 40%;
+    left: 40%;
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: translate(50px, 50px) scale(1.1);
+    }
+}
+
+/* Glass UI Container */
+.container {
+    width: 90%;
+    max-width: 600px;
+    background: var(--surface-color);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--surface-border);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.view {
+    display: none;
+    opacity: 0;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.view.active {
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* Start View */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.start-description {
+    text-align: center;
+}
+
+.header h1 {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: #8b949e;
+}
+
+.input-group {
+    margin-bottom: 30px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 2px solid var(--surface-border);
+    background: rgba(13, 17, 23, 0.7);
+    color: white;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color));
+    box-shadow: 0 4px 15px rgba(31, 111, 235, 0.4);
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(31, 111, 235, 0.6);
+}
+
+.primary-btn:active {
+    transform: translateY(1px);
+}
+
+.secondary-btn {
+    background: rgba(48, 54, 61, 0.8);
+    border: 1px solid var(--surface-border);
+}
+
+.secondary-btn:hover {
+    background: rgba(48, 54, 61, 1);
+}
+
+.error {
+    color: var(--wrong-color);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Quiz View */
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.progress-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+#question-counter {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(48, 54, 61, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.score-display {
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: rgba(88, 166, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: var(--primary-color);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+}
+
+.question-container {
+    margin-bottom: 30px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+h2#question-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.option-btn {
+    padding: 18px 20px;
+    background: rgba(13, 17, 23, 0.6);
+    border: 2px solid var(--surface-border);
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+@media (hover: hover) {
+    .option-btn:hover:not(:disabled) {
+        background: rgba(48, 54, 61, 0.8);
+        border-color: #8b949e;
+        transform: translateX(5px);
+    }
+}
+
+.option-btn.correct {
+    background: rgba(46, 160, 67, 0.15);
+    border-color: var(--correct-color);
+}
+
+.option-btn.wrong {
+    background: rgba(248, 81, 73, 0.15);
+    border-color: var(--wrong-color);
+}
+
+.option-btn:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+/* Feedback Box */
+.feedback-box {
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    background: rgba(13, 17, 23, 0.6);
+    border: 2px solid var(--surface-border);
+    animation: slideUp 0.3s ease forwards;
+}
+
+.feedback-box.correct {
+    background: rgba(46, 160, 67, 0.15);
+    border-color: var(--correct-color);
+    color: var(--correct-color);
+}
+
+.feedback-box.wrong {
+    background: rgba(248, 81, 73, 0.15);
+    border-color: var(--wrong-color);
+    color: var(--wrong-color);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Results View */
+.results-content {
+    text-align: center;
+}
+
+.results-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.final-score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(137, 87, 229, 0.1));
+    border: 4px solid var(--primary-color);
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    box-shadow: 0 0 30px rgba(88, 166, 255, 0.3);
+}
+
+#final-score {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: white;
+}
+
+.total {
+    font-size: 1.2rem;
+    color: #8b949e;
+}
+
+.result-msg {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
+
+.leaderboard-section {
+    background: rgba(13, 17, 23, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.leaderboard-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--surface-border);
+    padding-bottom: 10px;
+}
+
+#leaderboard-list {
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#leaderboard-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.3);
+}
+
+#leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+.lb-name {
+    font-weight: 600;
+}
+
+.lb-score {
+    color: var(--primary-color);
+    font-weight: 800;
+}
+
+/* Custom scrollbar for leaderboard */
+#leaderboard-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#leaderboard-list::-webkit-scrollbar-track {
+    background: rgba(13, 17, 23, 0.5);
+}
+
+#leaderboard-list::-webkit-scrollbar-thumb {
+    background: var(--surface-border);
+    border-radius: 3px;
+}
+
+/* Responsive Design */
+
+/* Tablet Styles - for devices like Galaxy Tab S10 Ultra (601px - 2000px) */
+@media (min-width: 601px) and (max-width: 2000px) {
+    .container {
+        max-width: 800px;
+        padding: 50px;
+        width: 85%;
+    }
+
+    .header h1 {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+    }
+
+    .header h4 {
+        font-size: 1.4rem;
+    }
+
+    .start-description {
+        font-size: 18px;
+    }
+
+    input[type="text"] {
+        padding: 20px 24px;
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: 20px;
+        font-size: 1.3rem;
+    }
+
+    h2#question-text {
+        font-size: 2rem;
+        line-height: 1.5;
+    }
+
+    .option-btn {
+        padding: 22px 24px;
+        font-size: 1.2rem;
+    }
+
+    .quiz-header {
+        margin-bottom: 40px;
+    }
+
+    #question-counter {
+        font-size: 1rem;
+    }
+
+    .score-display {
+        font-size: 1.2rem;
+        padding: 10px 20px;
+    }
+
+    .feedback-box {
+        padding: 20px 24px;
+        font-size: 1.2rem;
+    }
+
+    .results-content h2 {
+        font-size: 3rem;
+    }
+
+    .final-score-circle {
+        width: 180px;
+        height: 180px;
+    }
+
+    #final-score {
+        font-size: 4rem;
+    }
+
+    .total {
+        font-size: 1.4rem;
+    }
+
+    .result-msg {
+        font-size: 1.4rem;
+    }
+
+    .percentage {
+        font-size: 1.3rem;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+        width: 95%;
+    }
+
+    .header h1 {
+        font-size: 2.2rem;
+    }
+
+    h2#question-text {
+        font-size: 1.3rem;
+    }
+
+    .option-btn {
+        padding: 14px 16px;
+        font-size: 1rem;
+    }
+
+    .quiz-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .progress-container {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .score-display {
+        align-self: flex-start;
+    }
+
+    .results-content h2 {
+        font-size: 2rem;
+    }
+
+    .final-score-circle {
+        width: 120px;
+        height: 120px;
+    }
+
+    #final-score {
+        font-size: 2.8rem;
+    }
+
+    .shape-1,
+    .shape-2,
+    .shape-3 {
+        filter: blur(60px);
+    }
+
+    .shape-1 {
+        width: 250px;
+        height: 250px;
+    }
+
+    .shape-2 {
+        width: 300px;
+        height: 300px;
+    }
+
+    .shape-3 {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+/* QR Code Button (Floating) */
+.qr-code-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--surface-color);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.qr-code-btn:hover {
+    background: rgba(48, 54, 61, 0.9);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.qr-code-btn:active {
+    transform: scale(0.95);
+}
+
+.qr-code-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--primary-color);
+}
+
+/* QR Code Modal */
+.qr-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.qr-modal.hidden {
+    display: none;
+}
+
+.qr-modal-content {
+    background: var(--surface-color);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--surface-border);
+    border-radius: 24px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+}
+
+.qr-modal-content h3 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.qr-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 2rem;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.qr-modal-close:hover {
+    background: rgba(248, 81, 73, 0.2);
+    color: var(--wrong-color);
+    transform: rotate(90deg);
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    margin: 0 auto 20px;
+    width: fit-content;
+}
+
+.qr-link-text {
+    color: #8b949e;
+    font-size: 0.9rem;
+    word-break: break-all;
+    margin-top: 10px;
+}
+
+/* Mobile adjustments for QR code */
+@media (max-width: 600px) {
+    .qr-code-btn {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        right: 15px;
+    }
+
+    .qr-code-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .qr-modal-content {
+        padding: 25px 20px;
+        max-width: 90%;
+    }
+
+    .qr-modal-content h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    #qrcode {
+        padding: 15px;
+    }
+}

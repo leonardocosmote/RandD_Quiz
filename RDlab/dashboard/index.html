@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Dashboard - Cosmote R&D Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Quiz Dashboard</h1>
+            <p>Live metrics from the Cosmote R&D Lab interactive quiz.</p>
+        </div>
+
+        <!-- Loading View -->
+        <div id="loadingView">
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Fetching latest metrics...</p>
+            </div>
+        </div>
+
+        <!-- Dashboard View (hidden by default) -->
+        <div id="dashboardView" class="hidden">
+            <div class="tab-switcher">
+                <button id="overviewTabBtn" class="tab-btn active">Overview</button>
+                <button id="advancedTabBtn" class="tab-btn">Advanced</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overviewTab">
+                <div class="metrics-grid">
+                    <div class="metric-card primary">
+                        <div class="metric-title">Total Players</div>
+                        <div class="metric-value" id="totalPlayersVal">0</div>
+                    </div>
+                    <div class="metric-card accent">
+                        <div class="metric-title">Average Score</div>
+                        <div class="metric-value" id="averageScoreVal">0</div>
+                    </div>
+                </div>
+
+                <div class="leaderboard-section">
+                    <h2>Top Performers</h2>
+                    <div class="leaderboard-tab-switcher">
+                        <button id="completedTabBtn" class="leaderboard-tab-btn active">Completed</button>
+                        <button id="incompleteTabBtn" class="leaderboard-tab-btn">Incomplete</button>
+                    </div>
+                    <div id="completedLeaderboard" class="leaderboard-content">
+                        <ul class="leaderboard-list" id="leaderboardList">
+                            <!-- Populated via script.js -->
+                        </ul>
+                    </div>
+                    <div id="incompleteLeaderboard" class="leaderboard-content hidden">
+                        <ul class="leaderboard-list" id="incompleteLeaderboardList">
+                            <!-- Populated via script.js -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tab -->
+            <div id="advancedTab" class="hidden">
+                <div class="leaderboard-section">
+                    <h2>Trend: Players Over Time</h2>
+                    <div class="filter-controls">
+                        <button class="filter-btn active" data-interval="60">Per Hour</button>
+                        <button class="filter-btn" data-interval="30">Per 30 Min</button>
+                        <button class="filter-btn" data-interval="15">Per 15 Min</button>
+                        <button class="filter-btn" data-interval="5">Per 5 Min</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="../index.html" class="btn">Back to Quiz</a>
+            </div>
+        </div>
+
+        <!-- Error View (hidden by default) -->
+        <div id="errorView" class="hidden" style="text-align: center; padding: 40px; color: #f85149;">
+            <p id="errorMsg">Failed to load metrics. Please check your Google Apps Script URL.</p>
+            <a href="../index.html" class="btn" style="margin-top: 20px;">Back to Quiz</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
