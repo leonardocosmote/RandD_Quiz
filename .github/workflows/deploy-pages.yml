@@ -1,0 +1,56 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - ewoc
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-pages-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set deploy subfolder
+        id: target
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "subdir=RDlab" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/ewoc" ]; then
+            echo "subdir=ewoc" >> "$GITHUB_OUTPUT"
+          else
+            echo "Unexpected branch: ${{ github.ref }}"
+            exit 1
+          fi
+
+      - name: Prepare quiz bundle
+        run: |
+          mkdir -p _publish
+          cp index.html styles.css script.js questions.json _publish/
+          cp -r dashboard _publish/
+          touch _publish/.nojekyll
+
+      - name: Deploy quiz to /${{ steps.target.outputs.subdir }}/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_publish
+          destination_dir: ${{ steps.target.outputs.subdir }}
+          keep_files: true
+
+      - name: Deploy site index (quiz hub)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pages
+          destination_dir: .
+          keep_files: true
