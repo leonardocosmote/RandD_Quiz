@@ -13,6 +13,12 @@
 </head>
 
 <body>
+    <button type="button" id="homeBtn" class="home-btn hidden" title="Back to start" aria-label="Back to start">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z"></path>
+        </svg>
+    </button>
+
     <button id="qrCodeBtn" class="qr-code-btn" title="Share poll link">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="5" height="5"></rect>
@@ -75,42 +81,63 @@
 
             <div id="freeTextPanel" class="free-text-panel hidden">
                 <label id="freeTextLabel" for="freeTextInput">Add a short note (optional)</label>
+                <p class="free-text-hint">Tap another option above to change your answer.</p>
                 <textarea id="freeTextInput" rows="3" maxlength="500" placeholder="Optional"></textarea>
                 <div class="free-text-actions">
-                    <button type="button" id="freeTextBackBtn" class="btn secondary-btn">Choose a different answer</button>
-                    <button type="button" id="freeTextContinueBtn" class="btn primary-btn">Continue</button>
+                    <button type="button" id="freeTextContinueBtn" class="btn primary-btn">Done</button>
                 </div>
             </div>
 
             <div id="rankFooter" class="rank-footer hidden">
-                <p class="rank-hint">Rank up to <strong>three</strong> choices: tap in order (1 = highest priority). Tap again to remove. You can press <strong>Continue</strong> after <strong>one</strong> or <strong>two</strong> picks if you prefer.</p>
-                <button type="button" id="rankConfirmBtn" class="btn primary-btn" disabled>Continue</button>
+                <p class="rank-hint">Rank up to <strong>three</strong> choices: tap in order (1 = highest priority). Tap again to remove. Use <strong>Next</strong> when you are ready (one or two picks is fine).</p>
             </div>
 
             <div id="feedbackContainer" class="feedback-box hidden">
                 <p id="feedbackText"></p>
             </div>
+
+            <nav id="quizNav" class="quiz-nav" aria-label="Question navigation">
+                <button type="button" id="prevQuestionBtn" class="quiz-nav-btn" aria-label="Previous question">
+                    <svg class="quiz-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button type="button" id="nextQuestionBtn" class="quiz-nav-btn quiz-nav-btn--next" aria-label="Next question">
+                    <span id="nextQuestionLabel">Next</span>
+                    <svg class="quiz-nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </nav>
         </div>
 
-        <div id="resultsScreen" class="view">
-            <div class="results-content">
-                <div id="thankYouBlock">
-                    <h2>Thank you</h2>
-                    <p style="color: #8b949e; margin-bottom: 16px;">
-                        Your answers help us understand interest and opinions around <strong>6G-EWOC</strong>.
-                        There is no score — we appreciate you taking part.
-                    </p>
-                    <p class="result-msg"><span id="resultUserName"></span></p>
+        <div id="emailScreen" class="view">
+            <div class="email-step">
+                <h2>Stay in touch</h2>
+                <p class="email-step-lead">
+                    You may add your email to receive additional information regarding the
+                    <strong>6G-EWOC</strong> project.
+                </p>
+                <p class="optional-badge">Optional</p>
+                <p class="email-step-note">Leave the field empty if you prefer not to share an email.</p>
+                <div class="input-group email-input-group">
+                    <input type="email" id="userEmail" placeholder="your.email@example.com (optional)" maxlength="120"
+                        autocomplete="email" inputmode="email">
+                    <p id="emailError" class="error hidden"></p>
                 </div>
-
-                <div style="display:flex; flex-direction: column; gap:10px; margin-top:20px;">
-                    <div style="display:flex; gap:10px; width: 100%;">
-                        <button type="button" id="submitBtn" class="btn primary-btn" style="display:none;">Submit</button>
-                        <button type="button" id="retryBtn" class="btn secondary-btn" style="flex: 1;">Answer again</button>
-                    </div>
-                </div>
-                <p id="submitStatus" class="submit-status" role="status"></p>
+                <button type="button" id="emailContinueBtn" class="btn primary-btn email-continue-btn">Continue</button>
             </div>
+        </div>
+
+        <div id="resultsScreen" class="view thank-you-view">
+            <h2 class="thank-you-title">Thank you</h2>
+            <p class="thank-you-text">
+                Thank you for participating. Your answers help us understand interest and opinions around
+                <strong>6G-EWOC</strong>.
+            </p>
+            <p class="thank-you-name"><span id="resultUserName"></span></p>
+            <p id="submitStatus" class="submit-status" role="status"></p>
         </div>
     </div>
 

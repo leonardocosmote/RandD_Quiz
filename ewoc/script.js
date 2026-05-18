@@ -15,6 +15,7 @@ let quizState = {
     allQuestions: [],
     currentQuestionIndex: 0,
     userName: '',
+    userEmail: '',
     answers: [],
     isCompleted: false,
     googleAppsScriptUrl:
@@ -29,8 +30,12 @@ const startScreen = document.getElementById('startScreen');
 
 const userNameInput = document.getElementById('userName');
 const startBtn = document.getElementById('startBtn');
-const retryBtn = document.getElementById('retryBtn');
 const nameError = document.getElementById('nameError');
+const emailScreen = document.getElementById('emailScreen');
+const userEmailInput = document.getElementById('userEmail');
+const emailError = document.getElementById('emailError');
+const emailContinueBtn = document.getElementById('emailContinueBtn');
+const homeBtn = document.getElementById('homeBtn');
 
 const questionText = document.getElementById('question-text');
 const optionsContainer = document.getElementById('optionsContainer');
@@ -42,15 +47,15 @@ const totalQuestionsSpan = document.getElementById('totalQuestions');
 
 const resultUserName = document.getElementById('resultUserName');
 const submitStatus = document.getElementById('submitStatus');
-const thankYouBlock = document.getElementById('thankYouBlock');
-
 const rankFooter = document.getElementById('rankFooter');
-const rankConfirmBtn = document.getElementById('rankConfirmBtn');
 const freeTextPanel = document.getElementById('freeTextPanel');
+const prevQuestionBtn = document.getElementById('prevQuestionBtn');
+const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+const nextQuestionLabel = document.getElementById('nextQuestionLabel');
+const resultsScreen = document.getElementById('resultsScreen');
 const freeTextInput = document.getElementById('freeTextInput');
 const freeTextLabel = document.getElementById('freeTextLabel');
 const freeTextContinueBtn = document.getElementById('freeTextContinueBtn');
-const freeTextBackBtn = document.getElementById('freeTextBackBtn');
 
 const qrCodeBtn = document.getElementById('qrCodeBtn');
 const qrCodeModal = document.getElementById('qrCodeModal');
@@ -108,24 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
     setupIncompleteQuizTracking();
     setupQRCode();
-    if (rankConfirmBtn) {
-        rankConfirmBtn.addEventListener('click', confirmRankAndAdvance);
-    }
+    if (prevQuestionBtn) prevQuestionBtn.addEventListener('click', goToPreviousQuestion);
+    if (nextQuestionBtn) nextQuestionBtn.addEventListener('click', goToNextQuestion);
     if (freeTextContinueBtn) {
         freeTextContinueBtn.addEventListener('click', submitFreeTextAndAdvance);
     }
-    if (freeTextBackBtn) {
-        freeTextBackBtn.addEventListener('click', cancelFreeTextAndReopenOptions);
-    }
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        if (
-            freeTextPanel &&
-            pendingSingle &&
-            !freeTextPanel.classList.contains('hidden')
-        ) {
+        if (isFreeTextPanelOpen() && pendingSingle) {
             e.preventDefault();
-            cancelFreeTextAndReopenOptions();
+            submitFreeTextAndAdvance();
         }
     });
 });
@@ -145,12 +142,46 @@ function setupIncompleteQuizTracking() {
 
 function attachEventListeners() {
     startBtn.addEventListener('click', startQuiz);
-    retryBtn.addEventListener('click', retakeQuiz);
+    if (emailContinueBtn) emailContinueBtn.addEventListener('click', () => finishEmailStepFromInput());
+    if (homeBtn) homeBtn.addEventListener('click', goHome);
     if (userNameInput && nameError) {
         userNameInput.addEventListener('input', () => {
             nameError.classList.add('hidden');
         });
     }
+    if (userEmailInput && emailError) {
+        userEmailInput.addEventListener('input', () => {
+            emailError.classList.add('hidden');
+        });
+    }
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function finishEmailStepFromInput() {
+    const raw = userEmailInput ? userEmailInput.value.trim() : '';
+    if (!raw) {
+        finishEmailStep('');
+        return;
+    }
+    if (!isValidEmail(raw)) {
+        if (emailError) {
+            emailError.textContent = 'Please enter a valid email address, or leave the field empty to continue.';
+            emailError.classList.remove('hidden');
+        }
+        return;
+    }
+    finishEmailStep(raw);
+}
+
+async function finishEmailStep(email) {
+    quizState.userEmail = email || '';
+    if (emailError) emailError.classList.add('hidden');
+    quizState.isCompleted = true;
+    showThankYouScreen();
+    await submitPollCompletion();
 }
 
 function setupQRCode() {
@@ -228,6 +259,7 @@ function startQuiz() {
     }
 
     quizState.userName = name;
+    quizState.userEmail = '';
     quizState.currentQuestionIndex = 0;
     quizState.answers = [];
     quizState.isCompleted = false;
@@ -255,10 +287,133 @@ function getFeedbackForPrimaryChoice(question, optionIndex) {
     return FALLBACK_FEEDBACK[Math.floor(Math.random() * FALLBACK_FEEDBACK.length)];
 }
 
+function getAnswerForQuestion(questionIndex) {
+    return quizState.answers.find((a) => a.questionIndex === questionIndex);
+}
+
+function saveAnswer(answer) {
+    const i = quizState.answers.findIndex((a) => a.questionIndex === answer.questionIndex);
+    if (i >= 0) quizState.answers[i] = answer;
+    else quizState.answers.push(answer);
+    quizState.answers.sort((a, b) => a.questionIndex - b.questionIndex);
+}
+
+function removeAnswerForQuestion(questionIndex) {
+    quizState.answers = quizState.answers.filter((a) => a.questionIndex !== questionIndex);
+}
+
+function hideQuestionFeedback() {
+    if (feedbackContainer) {
+        feedbackContainer.className = 'feedback-box hidden';
+        feedbackText.textContent = '';
+    }
+}
+
+function showQuestionFeedback(question, primaryOptionIndex) {
+    if (!feedbackContainer || primaryOptionIndex == null) return;
+    feedbackContainer.className = 'feedback-box info';
+    feedbackText.textContent = getFeedbackForPrimaryChoice(question, primaryOptionIndex);
+}
+
+function isFreeTextPanelOpen() {
+    return freeTextPanel && !freeTextPanel.classList.contains('hidden');
+}
+
+function buildRankAnswer(question) {
+    return {
+        questionId: question.id,
+        questionIndex: quizState.currentQuestionIndex,
+        type: 'rank',
+        rankedIndices: [...rankOrder],
+        rankedLabels: rankOrder.map((i) => question.options[i]),
+    };
+}
+
+function buildSingleAnswer(question, selectedIndex, freeText) {
+    return {
+        questionId: question.id,
+        questionIndex: quizState.currentQuestionIndex,
+        type: 'single',
+        selectedIndex,
+        selectedLabel: question.options[selectedIndex],
+        freeText: freeText || undefined,
+    };
+}
+
+function persistCurrentQuestionFromUI() {
+    if (isFreeTextPanelOpen()) return;
+    const q = quizState.questions[quizState.currentQuestionIndex];
+    if (!q) return;
+    if (q.type === 'rank') {
+        if (rankOrder.length < 1) {
+            removeAnswerForQuestion(quizState.currentQuestionIndex);
+            hideQuestionFeedback();
+            return;
+        }
+        saveAnswer(buildRankAnswer(q));
+        showQuestionFeedback(q, rankOrder[0]);
+    }
+}
+
+function currentQuestionHasAnswer() {
+    if (isFreeTextPanelOpen()) return false;
+    const q = quizState.questions[quizState.currentQuestionIndex];
+    if (!q) return false;
+    if (q.type === 'rank') return rankOrder.length >= 1;
+    return !!getAnswerForQuestion(quizState.currentQuestionIndex);
+}
+
+function updateQuizNavButtons() {
+    const idx = quizState.currentQuestionIndex;
+    const total = quizState.questions.length;
+    const isLast = idx >= total - 1;
+
+    if (prevQuestionBtn) {
+        prevQuestionBtn.disabled = idx <= 0 || isFreeTextPanelOpen();
+    }
+    if (nextQuestionBtn) {
+        nextQuestionBtn.disabled = !currentQuestionHasAnswer();
+    }
+    if (nextQuestionLabel) {
+        nextQuestionLabel.textContent = isLast ? 'Finish' : 'Next';
+    }
+    if (nextQuestionBtn) {
+        nextQuestionBtn.setAttribute('aria-label', isLast ? 'Finish poll' : 'Next question');
+    }
+}
+
+function applySavedAnswerToUI(question, saved) {
+    if (!saved) {
+        hideQuestionFeedback();
+        return;
+    }
+    if (saved.type === 'rank') {
+        updateRankButtonStates();
+        showQuestionFeedback(question, saved.rankedIndices[0]);
+    } else if (saved.type === 'single') {
+        optionsContainer.querySelectorAll('.option-btn').forEach((btn, i) => {
+            btn.classList.toggle('single-picked', i === saved.selectedIndex);
+        });
+        showQuestionFeedback(question, saved.selectedIndex);
+    }
+}
+
+function goToPreviousQuestion() {
+    if (quizState.currentQuestionIndex <= 0 || isFreeTextPanelOpen()) return;
+    persistCurrentQuestionFromUI();
+    quizState.currentQuestionIndex--;
+    displayQuestion();
+}
+
+function goToNextQuestion() {
+    if (!currentQuestionHasAnswer() || isFreeTextPanelOpen()) return;
+    persistCurrentQuestionFromUI();
+    quizState.currentQuestionIndex++;
+    displayQuestion();
+}
+
 function displayQuestion() {
     hideFreeTextPanel();
-    if (rankFooter) rankFooter.classList.add('hidden');
-    rankOrder = [];
 
     if (quizState.currentQuestionIndex >= quizState.questions.length) {
         showResults();
@@ -266,6 +421,16 @@ function displayQuestion() {
     }
 
     const q = quizState.questions[quizState.currentQuestionIndex];
+    const saved = getAnswerForQuestion(quizState.currentQuestionIndex);
+
+    if (q.type === 'rank') {
+        rankOrder = saved?.type === 'rank' ? [...saved.rankedIndices] : [];
+        if (rankFooter) rankFooter.classList.remove('hidden');
+    } else {
+        rankOrder = [];
+        if (rankFooter) rankFooter.classList.add('hidden');
+    }
+
     currentQuestionSpan.textContent = quizState.currentQuestionIndex + 1;
     const progress = ((quizState.currentQuestionIndex + 1) / quizState.questions.length) * 100;
     progressBar.style.width = `${progress}%`;
@@ -273,16 +438,11 @@ function displayQuestion() {
     questionText.textContent = q.question;
     updateQuizLayoutDenseClass(q);
 
-    if (feedbackContainer) {
-        feedbackContainer.className = 'feedback-box hidden';
-        feedbackText.textContent = '';
-    }
+    if (!saved) hideQuestionFeedback();
 
     optionsContainer.innerHTML = '';
 
     if (q.type === 'rank') {
-        if (rankFooter) rankFooter.classList.remove('hidden');
-        if (rankConfirmBtn) rankConfirmBtn.disabled = rankOrder.length < 1;
         q.options.forEach((label, index) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -303,6 +463,9 @@ function displayQuestion() {
             optionsContainer.appendChild(button);
         });
     }
+
+    applySavedAnswerToUI(q, saved);
+    updateQuizNavButtons();
 }
 
 function onRankOptionClick(optionIndex, question) {
@@ -313,7 +476,8 @@ function onRankOptionClick(optionIndex, question) {
         rankOrder.push(optionIndex);
     }
     updateRankButtonStates();
-    if (rankConfirmBtn) rankConfirmBtn.disabled = rankOrder.length < 1;
+    persistCurrentQuestionFromUI();
+    updateQuizNavButtons();
 }
 
 function updateRankButtonStates() {
@@ -328,34 +492,6 @@ function updateRankButtonStates() {
     });
 }
 
-function confirmRankAndAdvance() {
-    const q = quizState.questions[quizState.currentQuestionIndex];
-    if (q.type !== 'rank' || rankOrder.length < 1) return;
-
-    const rankedTexts = rankOrder.map((i) => q.options[i]);
-    quizState.answers.push({
-        questionId: q.id,
-        questionIndex: quizState.currentQuestionIndex,
-        type: 'rank',
-        rankedIndices: [...rankOrder],
-        rankedLabels: rankedTexts,
-    });
-
-    if (rankConfirmBtn) rankConfirmBtn.disabled = true;
-    const buttons = optionsContainer.querySelectorAll('.option-btn');
-    buttons.forEach((b) => (b.disabled = true));
-
-    if (feedbackContainer) {
-        feedbackContainer.className = 'feedback-box info';
-        feedbackText.textContent = getFeedbackForPrimaryChoice(q, rankOrder[0]);
-    }
-
-    setTimeout(() => {
-        quizState.currentQuestionIndex++;
-        displayQuestion();
-    }, 2200);
-}
-
 let pendingSingle = null;
 
 function onSingleOptionClick(selectedIndex, question) {
@@ -365,38 +501,34 @@ function onSingleOptionClick(selectedIndex, question) {
     if (optionNeedsFreeText(label)) {
         pendingSingle = { selectedIndex, question, label };
         buttons.forEach((b, i) => {
-            b.disabled = true;
             b.classList.toggle('single-picked', i === selectedIndex);
         });
         showFreeTextPanel(label);
+        updateQuizNavButtons();
         return;
     }
 
+    hideFreeTextPanel();
     finalizeSingleAnswer(selectedIndex, question, '');
 }
 
 function showFreeTextPanel(forLabel) {
     if (!freeTextPanel || !freeTextInput) return;
     freeTextLabel.textContent = 'Add a short note (optional)';
-    freeTextInput.value = '';
+    const saved = getAnswerForQuestion(quizState.currentQuestionIndex);
+    const sameOption =
+        saved?.type === 'single' &&
+        pendingSingle &&
+        saved.selectedIndex === pendingSingle.selectedIndex;
+    freeTextInput.value = sameOption && saved.freeText ? saved.freeText : '';
     freeTextPanel.classList.remove('hidden');
     freeTextInput.focus();
+    updateQuizNavButtons();
 }
 
 function hideFreeTextPanel() {
     if (freeTextPanel) freeTextPanel.classList.add('hidden');
     pendingSingle = null;
-}
-
-/** Close optional-text step and pick another option (Q10 Other / Q11 self-describe). */
-function cancelFreeTextAndReopenOptions() {
-    pendingSingle = null;
-    if (freeTextInput) freeTextInput.value = '';
-    if (freeTextPanel) freeTextPanel.classList.add('hidden');
-    optionsContainer.querySelectorAll('.option-btn').forEach((b) => {
-        b.disabled = false;
-        b.classList.remove('single-picked');
-    });
 }
 
 function submitFreeTextAndAdvance() {
@@ -410,41 +542,36 @@ function submitFreeTextAndAdvance() {
 function finalizeSingleAnswer(selectedIndex, question, freeText) {
     const buttons = optionsContainer.querySelectorAll('.option-btn');
     buttons.forEach((b, i) => {
-        b.disabled = true;
         b.classList.toggle('single-picked', i === selectedIndex);
     });
 
-    quizState.answers.push({
-        questionId: question.id,
-        questionIndex: quizState.currentQuestionIndex,
-        type: 'single',
-        selectedIndex,
-        selectedLabel: question.options[selectedIndex],
-        freeText: freeText || undefined,
-    });
-
-    if (feedbackContainer) {
-        feedbackContainer.className = 'feedback-box info';
-        feedbackText.textContent = getFeedbackForPrimaryChoice(question, selectedIndex);
-    }
-
-    setTimeout(() => {
-        quizState.currentQuestionIndex++;
-        displayQuestion();
-    }, 2200);
+    saveAnswer(buildSingleAnswer(question, selectedIndex, freeText));
+    showQuestionFeedback(question, selectedIndex);
+    updateQuizNavButtons();
 }
 
 function showResults() {
     quizScreenEl.classList.remove('active');
-    resultsScreen.classList.add('active');
+    if (resultsScreen) resultsScreen.classList.remove('active');
+    if (emailScreen) {
+        emailScreen.classList.add('active');
+        if (userEmailInput) userEmailInput.value = '';
+        if (emailError) emailError.classList.add('hidden');
+    }
+    if (homeBtn) homeBtn.classList.add('hidden');
+    document.body.classList.remove('thank-you-mode');
+}
 
-    resultUserName.textContent = quizState.userName;
-    if (thankYouBlock) thankYouBlock.classList.remove('hidden');
-    submitStatus.textContent = '';
-    submitStatus.className = 'submit-status';
-
-    quizState.isCompleted = true;
-    submitPollCompletion();
+function showThankYouScreen() {
+    document.body.classList.add('thank-you-mode');
+    if (emailScreen) emailScreen.classList.remove('active');
+    if (resultsScreen) resultsScreen.classList.add('active');
+    if (resultUserName) resultUserName.textContent = quizState.userName;
+    if (submitStatus) {
+        submitStatus.textContent = '';
+        submitStatus.className = 'submit-status';
+    }
+    if (homeBtn) homeBtn.classList.remove('hidden');
 }
 
 function buildPayload(completed) {
@@ -453,6 +580,7 @@ function buildPayload(completed) {
     return {
         projectId: PROJECT_ID,
         userName: quizState.userName,
+        email: quizState.userEmail || '',
         answeredCount: answered,
         pollTotal: total,
         timestamp: new Date().toISOString(),
@@ -512,18 +640,24 @@ async function submitPollCompletion() {
     }
 }
 
-function retakeQuiz() {
+function goHome() {
     quizState.currentQuestionIndex = 0;
     quizState.answers = [];
+    quizState.userEmail = '';
     quizState.isCompleted = false;
     userNameInput.value = '';
-    submitStatus.textContent = '';
-    submitStatus.className = 'submit-status';
+    if (submitStatus) {
+        submitStatus.textContent = '';
+        submitStatus.className = 'submit-status';
+    }
     hideFreeTextPanel();
     rankOrder = [];
-    if (thankYouBlock) thankYouBlock.classList.add('hidden');
+    document.body.classList.remove('thank-you-mode');
+    if (homeBtn) homeBtn.classList.add('hidden');
 
-    resultsScreen.classList.remove('active');
+    if (resultsScreen) resultsScreen.classList.remove('active');
+    if (emailScreen) emailScreen.classList.remove('active');
+    if (quizScreenEl) quizScreenEl.classList.remove('active');
     startScreen.classList.add('active');
     userNameInput.focus();
 }

@@ -469,6 +469,59 @@ h2#question-text {
     gap: 12px;
 }
 
+.quiz-nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 8px;
+}
+
+.quiz-nav-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid var(--surface-border);
+    background: rgba(13, 17, 23, 0.6);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quiz-nav-btn--next {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.quiz-nav-icon {
+    flex-shrink: 0;
+}
+
+@media (hover: hover) {
+    .quiz-nav-btn:hover:not(:disabled) {
+        border-color: #8b949e;
+        transform: translateY(-1px);
+    }
+
+    .quiz-nav-btn--next:hover:not(:disabled) {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+    }
+}
+
+.quiz-nav-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .rank-hint {
     color: #8b949e;
     font-size: 0.95rem;
@@ -490,6 +543,13 @@ h2#question-text {
 .free-text-panel label {
     font-size: 0.95rem;
     color: #8b949e;
+}
+
+.free-text-hint {
+    font-size: 0.88rem;
+    color: #6e7681;
+    margin: -4px 0 8px;
+    line-height: 1.4;
 }
 
 .free-text-panel textarea {
@@ -539,6 +599,126 @@ h2#question-text {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Optional email step (before thank you) */
+.email-step {
+    text-align: center;
+}
+
+.email-step h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: 14px;
+}
+
+.email-step-lead {
+    color: #c9d1d9;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+.optional-badge {
+    display: inline-block;
+    margin: 0 auto 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #79c0ff;
+    background: rgba(88, 166, 255, 0.12);
+    border: 1px solid rgba(88, 166, 255, 0.35);
+}
+
+.email-step-note {
+    color: #8b949e;
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+}
+
+.email-input-group {
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+input[type="email"] {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 2px solid var(--surface-border);
+    background: rgba(13, 17, 23, 0.7);
+    color: white;
+    font-size: 1.05rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input[type="email"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}
+
+.email-continue-btn {
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* Thank you (minimal — card styling removed via body.thank-you-mode) */
+.thank-you-view {
+    text-align: center;
+    padding: 12px 0 8px;
+}
+
+body.thank-you-mode .thank-you-view.view.active {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+
+/* Avoid empty glass card when no step is visible inside the container */
+.container:not(:has(.view.active)) {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.thank-you-title {
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    font-weight: 800;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.thank-you-text {
+    color: #8b949e;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    margin-bottom: 14px;
+}
+
+.thank-you-name {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+body.thank-you-mode .container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding-top: 56px;
+    padding-bottom: 32px;
+}
+
+body.thank-you-mode .background-shapes {
+    opacity: 1;
 }
 
 /* Results View */
@@ -871,6 +1051,45 @@ h2#question-text {
     }
 }
 
+/* Home button (thank-you screen) */
+.home-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+}
+
+.home-btn.hidden {
+    display: none;
+}
+
+@media (hover: hover) {
+    .home-btn:hover {
+        background: var(--primary-hover);
+        transform: scale(1.08);
+    }
+}
+
+.home-btn:active {
+    transform: scale(0.95);
+}
+
+body.thank-you-mode .qr-code-btn {
+    display: none;
+}
+
 /* QR Code Button (Floating) */
 .qr-code-btn {
     position: fixed;
@@ -994,6 +1213,13 @@ h2#question-text {
 
 /* Mobile adjustments for QR code */
 @media (max-width: 600px) {
+    .home-btn {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        right: 15px;
+    }
+
     .qr-code-btn {
         width: 45px;
         height: 45px;
