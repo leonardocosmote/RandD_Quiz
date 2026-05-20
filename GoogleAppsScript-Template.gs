@@ -33,14 +33,14 @@ function headerIndexMap(headers) {
   return map;
 }
 
-/** Pull optional gender (Q11) into one cell for analysis — in addition to full Answers JSON. */
+/** Pull optional gender (Q12) into one cell for analysis — in addition to full Answers JSON. */
 function extractGenderResponse(answers) {
   if (!answers || !answers.length) return "";
   for (var i = 0; i < answers.length; i++) {
     var a = answers[i];
     if (!a) continue;
     var qid = a.questionId;
-    if (qid === 11 || qid === "11") {
+    if (qid === 12 || qid === "12") {
       if (a.type === "single" && a.selectedLabel) {
         var line = String(a.selectedLabel).trim();
         if (a.freeText) line += " — " + String(a.freeText).trim();
@@ -210,14 +210,14 @@ function testDoPost() {
         projectId: "6G-EWOC",
         userName: "Test User",
         email: "visitor@example.com",
-        answeredCount: 11,
-        pollTotal: 11,
+        answeredCount: 12,
+        pollTotal: 12,
         completed: true,
         timestamp: new Date().toISOString(),
         answers: [
           { questionId: 1, type: "single", selectedLabel: "Yes" },
           {
-            questionId: 11,
+            questionId: 12,
             type: "single",
             selectedLabel: "Prefer to self-describe:",
             freeText: "Agender",

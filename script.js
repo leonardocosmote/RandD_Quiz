@@ -4,12 +4,6 @@
 
 const PROJECT_ID = '6G-EWOC';
 
-const FALLBACK_FEEDBACK = [
-    'Thank you — your answer is noted.',
-    'Thanks — we have recorded your response.',
-    'Noted. Your input helps shape how we read these results.',
-];
-
 let quizState = {
     questions: [],
     allQuestions: [],
@@ -39,8 +33,6 @@ const homeBtn = document.getElementById('homeBtn');
 
 const questionText = document.getElementById('question-text');
 const optionsContainer = document.getElementById('optionsContainer');
-const feedbackContainer = document.getElementById('feedbackContainer');
-const feedbackText = document.getElementById('feedbackText');
 const progressBar = document.querySelector('.progress-fill');
 const currentQuestionSpan = document.getElementById('currentQuestion');
 const totalQuestionsSpan = document.getElementById('totalQuestions');
@@ -82,17 +74,14 @@ function normalizeQuestionsFromJson(raw) {
             const id = typeof item.id === 'number' ? item.id : index + 1;
             let type = item.type;
             if (type !== 'rank' && type !== 'single') {
-                type = id >= 2 && id <= 9 ? 'rank' : 'single';
+                type = 'single';
             }
             const options = Array.isArray(item.options) ? item.options.map((o) => String(o)) : [];
-            let feedback = Array.isArray(item.feedback) ? item.feedback.map((f) => String(f).trim()) : [];
-            if (feedback.length > options.length) feedback = feedback.slice(0, options.length);
             return {
                 id,
                 question: String(item.question || '').trim(),
                 options,
                 type,
-                feedback,
             };
         })
         .filter((q) => q.question && q.options.length > 0)
@@ -273,20 +262,6 @@ function startQuiz() {
     displayQuestion();
 }
 
-/** Per-option copy from questions.json; uses top rank (#1) or single selection. */
-function getFeedbackForPrimaryChoice(question, optionIndex) {
-    const fb = question.feedback;
-    if (
-        Array.isArray(fb) &&
-        optionIndex >= 0 &&
-        optionIndex < fb.length &&
-        fb[optionIndex]
-    ) {
-        return fb[optionIndex];
-    }
-    return FALLBACK_FEEDBACK[Math.floor(Math.random() * FALLBACK_FEEDBACK.length)];
-}
-
 function getAnswerForQuestion(questionIndex) {
     return quizState.answers.find((a) => a.questionIndex === questionIndex);
 }
@@ -300,19 +275,6 @@ function saveAnswer(answer) {
 
 function removeAnswerForQuestion(questionIndex) {
     quizState.answers = quizState.answers.filter((a) => a.questionIndex !== questionIndex);
-}
-
-function hideQuestionFeedback() {
-    if (feedbackContainer) {
-        feedbackContainer.className = 'feedback-box hidden';
-        feedbackText.textContent = '';
-    }
-}
-
-function showQuestionFeedback(question, primaryOptionIndex) {
-    if (!feedbackContainer || primaryOptionIndex == null) return;
-    feedbackContainer.className = 'feedback-box info';
-    feedbackText.textContent = getFeedbackForPrimaryChoice(question, primaryOptionIndex);
 }
 
 function isFreeTextPanelOpen() {
@@ -347,11 +309,9 @@ function persistCurrentQuestionFromUI() {
     if (q.type === 'rank') {
         if (rankOrder.length < 1) {
             removeAnswerForQuestion(quizState.currentQuestionIndex);
-            hideQuestionFeedback();
             return;
         }
         saveAnswer(buildRankAnswer(q));
-        showQuestionFeedback(q, rankOrder[0]);
     }
 }
 
@@ -383,18 +343,13 @@ function updateQuizNavButtons() {
 }
 
 function applySavedAnswerToUI(question, saved) {
-    if (!saved) {
-        hideQuestionFeedback();
-        return;
-    }
+    if (!saved) return;
     if (saved.type === 'rank') {
         updateRankButtonStates();
-        showQuestionFeedback(question, saved.rankedIndices[0]);
     } else if (saved.type === 'single') {
         optionsContainer.querySelectorAll('.option-btn').forEach((btn, i) => {
             btn.classList.toggle('single-picked', i === saved.selectedIndex);
         });
-        showQuestionFeedback(question, saved.selectedIndex);
     }
 }
 
@@ -437,8 +392,6 @@ function displayQuestion() {
 
     questionText.textContent = q.question;
     updateQuizLayoutDenseClass(q);
-
-    if (!saved) hideQuestionFeedback();
 
     optionsContainer.innerHTML = '';
 
@@ -546,7 +499,6 @@ function finalizeSingleAnswer(selectedIndex, question, freeText) {
     });
 
     saveAnswer(buildSingleAnswer(question, selectedIndex, freeText));
-    showQuestionFeedback(question, selectedIndex);
     updateQuizNavButtons();
 }
 

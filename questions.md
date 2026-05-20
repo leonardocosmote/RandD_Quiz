@@ -1,95 +1,97 @@
-**Questions / Answer options for "Public" Poll through Tablet at EuCNC**
+# 6G-EWOC Visitor Poll (EUCNC 2026)
 
-Motivation: engage people but also check for opinion and interest
+Help us understand the 6G-EWOC technologies and applications that will impact 6G the most.
 
-**(1) Had you heard about 6G-EWOC before today?**
+## Questions
 
-- Yes
-- No
-- Only vaguely
+1. Have you heard about the 6G-EWOC SNS-JU project before?
+   - Yes
+   - No
+   - Only vaguely
 
-**(2) Which 6G-EWOC technology interests you most?**
+2. Which technology domain will have the greatest impact on 6G network evolution?
+   - AI-native networking
+   - Integrated sensing and communications (ISAC/JCAS)
+   - Optical wireless communications
+   - Edge-cloud continuum
+   - Advanced RF technologies (mmWave/sub-THz)
 
-- Optical wireless communication
-- AI orchestration
-- Integrated sensing
-- Edge/cloud intelligence
-- Smart mobility applications
+3. How important will AI-driven network orchestration be for future 6G systems?
+   - Critical
+   - Very important
+   - Moderately important
+   - Slightly important
+   - Not important
 
-**(3) Which sensing capability will create the most value in 6G networks?**
+4. What will be the most transformative sensing capability integrated into 6G networks?
+   - LiDAR-based sensing
+   - Radar-based sensing
+   - Joint communication and sensing (JCAS/ISAC)
+   - Collaborative perception systems
+   - Environmental digital twins
 
-- Traffic awareness
-- Environmental monitoring
-- Precision positioning
-- Infrastructure diagnostics
-- Crowd management
+5. How significant will edge computing be for enabling future autonomous and real-time applications in 6G?
+   - Essential
+   - Very significant
+   - Moderately significant
+   - Limited significance
+   - Not significant
 
-**(4) Where should intelligence primarily reside in 6G systems?**
+6. Which enabling technology is expected to most improve reliability and resilience in 6G networks?
+   - Multi-access networking
+   - AI-assisted resource management
+   - Photonic networking technologies
+   - Network digital twins
+   - Distributed cloud/edge architectures
 
-- Edge devices
-- Edge cloud
-- Central cloud
-- Distributed hybrid architecture
+7. Which application area will most strongly drive 6G technology requirements?
+   - Connected and autonomous mobility
+   - Industrial automation
+   - Immersive XR/metaverse services
+   - Smart cities
+   - Healthcare and remote surgery
+   - Massive IoT and sensing systems
 
-**(5) What should AI manage first in future 6G networks?**
+8. Which technology will be most important for achieving energy-efficient 6G infrastructures?
+   - AI-based energy optimization
+   - Photonic integrated circuits
+   - Edge computing architectures
+   - Advanced semiconductor technologies
+   - Network virtualization and softwarization
+   - Renewable-powered network infrastructure
 
-- Resource allocation
-- Mobility management
-- Security monitoring
-- Energy optimization
-- Predictive maintenance
+9. How important will multi-modal data fusion (communication, sensing, positioning, and AI) be in future 6G applications?
+   - Essential
+   - Very important
+   - Moderately important
+   - Slightly important
+   - Not important
 
-**(6) Would you trust AI to autonomously manage future mobility?**
+10. Which challenge is likely to be the biggest obstacle for large-scale 6G deployment?
+    - Energy efficiency
+    - Spectrum availability
+    - AI trustworthiness and explainability
+    - Network complexity
+    - Security and privacy
+    - Cost of infrastructure deployment
 
-- Yes
-- Yes, with human oversight
-- Only in limited cases
-- No
+11. Which area best reflects your main area of expertise or professional activity?
+    - Optical and wireless communication technologies
+    - Artificial intelligence and data-driven networking
+    - Integrated sensing and positioning systems
+    - Edge / cloud computing and distributed intelligence
+    - Smart mobility and transportation systems
+    - Cybersecurity and privacy
+    - Network architecture and resource management
+    - Sustainability, energy efficiency, and green ICT
+    - Policy, standardization, or regulation
+    - Research and academia
+    - Industry and product development
+    - Other (please specify): ______
 
-**(7) What will be the defining cybersecurity challenge for 6G?**
-
-- AI-driven attacks
-- Quantum threats
-- Massive device scale
-- Privacy protection
-- Supply-chain trust
-
-**(8) What is the most important sustainability metric for 6G systems?**
-
-- Energy per bit
-- Infrastructure lifecycle impact
-- Renewable integration
-- Hardware reuse
-- Network efficiency
-
-**(9) What matters most for citizens in future networks?**
-
-- Reliability
-- Maximum data privacy
-- Ultra-fast everywhere: Performance / Speed
-- Go green: Sustainability and low energy use
-- Affordability
-
-**(10) Which area best reflects your main area of expertise or professional activity?**
-
-- Optical and wireless communication technologies
-- Artificial intelligence and data‑driven networking
-- Integrated sensing and positioning systems
-- Edge / cloud computing and distributed intelligence
-- Smart mobility and transportation systems
-- Cybersecurity and privacy
-- Network architecture and resource management
-- Sustainability, energy efficiency, and green ICT
-- Policy, standardization, or regulation
-- Research and academia
-- Industry and product development
-- **Other (please specify):** \_**\_**\_\_\_\_
-
-**(11) To help us understand participation trends across different technology domains, we invite you to optionally share your gender.**  
-**What is your gender?**
-
-- Woman
-- Man
-- Non‑binary
-- Prefer to self‑describe: \_**\_**
-- Prefer not to say
+12. To help us understand participation trends across different technology domains, we invite you to optionally share your gender. What is your gender?
+    - Woman
+    - Man
+    - Non-binary
+    - Prefer to self-describe: ______
+    - Prefer not to say
