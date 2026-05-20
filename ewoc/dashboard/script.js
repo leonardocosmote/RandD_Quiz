@@ -23,6 +23,8 @@ const incompleteLeaderboard = document.getElementById('incompleteLeaderboard');
 const completedTabBtn = document.getElementById('completedTabBtn');
 const incompleteTabBtn = document.getElementById('incompleteTabBtn');
 const trendChartCanvas = document.getElementById('trendChart');
+const genderBarChartCanvas = document.getElementById('genderBarChart');
+const genderPieChartCanvas = document.getElementById('genderPieChart');
 const overviewTab = document.getElementById('overviewTab');
 const advancedTab = document.getElementById('advancedTab');
 const overviewTabBtn = document.getElementById('overviewTabBtn');
@@ -30,10 +32,220 @@ const advancedTabBtn = document.getElementById('advancedTabBtn');
 
 // Chart instance and data
 let trendChart = null;
+let genderBarChart = null;
+let genderPieChart = null;
 let rawTimestampsData = [];
 let rawTimestampsIncompleteData = [];
 let currentInterval = 60; // Default: per hour (in minutes)
 let dashboardData = null; // Store dashboard data for tab switching
+
+const GENDER_CATEGORY_ORDER = [
+    'Woman',
+    'Man',
+    'Non-binary',
+    'Other',
+    'Prefer not to say',
+    'No response',
+];
+
+const GENDER_CHART_COLORS = {
+    Woman: 'rgb(232, 121, 169)',
+    Man: 'rgb(68, 98, 162)',
+    'Non-binary': 'rgb(163, 113, 247)',
+    Other: 'rgb(210, 153, 34)',
+    'Prefer not to say': 'rgb(139, 148, 158)',
+    'No response': 'rgb(72, 79, 88)',
+};
+
+function normalizeGenderCategory(raw) {
+    if (raw === null || raw === undefined || !String(raw).trim()) return 'No response';
+    const base = String(raw).trim().split(' — ')[0].trim();
+    if (/^woman$/i.test(base)) return 'Woman';
+    if (/^man$/i.test(base)) return 'Man';
+    if (/non[- ]?binary/i.test(base)) return 'Non-binary';
+    if (/prefer not to say/i.test(base)) return 'Prefer not to say';
+    if (/self-describe/i.test(base) || /\bother\b/i.test(base)) return 'Other';
+    return 'Other';
+}
+
+function extractGenderFromPlayer(player) {
+    if (player.genderResponse) return player.genderResponse;
+    const answers = player.answers || [];
+    for (const a of answers) {
+        const qid = a.questionId;
+        if (qid === 12 || qid === '12' || qid === 11 || qid === '11') {
+            if (a.type === 'single' && a.selectedLabel) {
+                let line = String(a.selectedLabel).trim();
+                if (a.freeText) line += ` — ${String(a.freeText).trim()}`;
+                return line;
+            }
+        }
+    }
+    return '';
+}
+
+function buildGenderBreakdown(completedPlayers) {
+    const counts = {};
+    completedPlayers.forEach((player) => {
+        const category = normalizeGenderCategory(extractGenderFromPlayer(player));
+        counts[category] = (counts[category] || 0) + 1;
+    });
+    return GENDER_CATEGORY_ORDER.filter((label) => counts[label] > 0).map((label) => ({
+        label,
+        count: counts[label],
+    }));
+}
+
+function genderColorForLabel(label) {
+    return GENDER_CHART_COLORS[label] || 'rgb(139, 148, 158)';
+}
+
+function drawGenderChartPlaceholder(canvas, message) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '16px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+}
+
+function sharedGenderChartOptions(total) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    color: '#c9d1d9',
+                    font: { family: 'Outfit', size: 12 },
+                    padding: 14,
+                },
+            },
+            tooltip: {
+                backgroundColor: 'rgba(22, 27, 34, 0.9)',
+                titleColor: '#c9d1d9',
+                bodyColor: '#c9d1d9',
+                borderColor: 'rgba(48, 54, 61, 0.5)',
+                borderWidth: 1,
+                padding: 12,
+                font: { family: 'Outfit' },
+                callbacks: {
+                    label(context) {
+                        const value = context.parsed.y ?? context.parsed;
+                        const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                        return `${context.label}: ${value} (${pct}%)`;
+                    },
+                },
+            },
+        },
+    };
+}
+
+function updateGenderCharts(data) {
+    if (!genderBarChartCanvas || !genderPieChartCanvas) return;
+
+    if (genderBarChart) {
+        genderBarChart.destroy();
+        genderBarChart = null;
+    }
+    if (genderPieChart) {
+        genderPieChart.destroy();
+        genderPieChart = null;
+    }
+
+    const completedPlayers = data.topScores || [];
+    const breakdown =
+        Array.isArray(data.genderBreakdown) && data.genderBreakdown.length
+            ? data.genderBreakdown
+            : buildGenderBreakdown(completedPlayers);
+
+    if (!breakdown.length) {
+        drawGenderChartPlaceholder(genderBarChartCanvas, 'No gender responses yet.');
+        drawGenderChartPlaceholder(genderPieChartCanvas, 'No gender responses yet.');
+        return;
+    }
+
+    const labels = breakdown.map((item) => item.label);
+    const counts = breakdown.map((item) => item.count);
+    const colors = labels.map((label) => genderColorForLabel(label));
+    const total = counts.reduce((sum, n) => sum + n, 0);
+
+    genderBarChart = new Chart(genderBarChartCanvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Responses',
+                    data: counts,
+                    backgroundColor: colors.map((c) => c.replace('rgb', 'rgba').replace(')', ', 0.85)')),
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 6,
+                },
+            ],
+        },
+        options: {
+            ...sharedGenderChartOptions(total),
+            plugins: {
+                ...sharedGenderChartOptions(total).plugins,
+                legend: { display: false },
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#8b949e',
+                        font: { family: 'Outfit', size: 12 },
+                    },
+                    grid: { color: 'rgba(48, 54, 61, 0.3)' },
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#8b949e',
+                        font: { family: 'Outfit', size: 12 },
+                        stepSize: 1,
+                    },
+                    grid: { color: 'rgba(48, 54, 61, 0.3)' },
+                },
+            },
+        },
+    });
+
+    genderPieChart = new Chart(genderPieChartCanvas, {
+        type: 'pie',
+        data: {
+            labels,
+            datasets: [
+                {
+                    data: counts,
+                    backgroundColor: colors.map((c) => c.replace('rgb', 'rgba').replace(')', ', 0.85)')),
+                    borderColor: '#0d1117',
+                    borderWidth: 2,
+                },
+            ],
+        },
+        options: {
+            ...sharedGenderChartOptions(total),
+            plugins: {
+                ...sharedGenderChartOptions(total).plugins,
+                tooltip: {
+                    ...sharedGenderChartOptions(total).plugins.tooltip,
+                    callbacks: {
+                        label(context) {
+                            const value = context.parsed;
+                            const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                            return `${context.label}: ${value} (${pct}%)`;
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
 
 // Fetch dashboard data
 async function fetchDashboardData() {
@@ -126,6 +338,9 @@ function updateDashboard(data) {
   
   // Build per-hour trend chart (default view)
   updateTrendChart(currentInterval);
+
+  // Gender breakdown charts (completed responses)
+  updateGenderCharts(data);
 }
 
 // Update metrics based on selected tab (completed or incomplete)
@@ -528,6 +743,10 @@ window.addEventListener('DOMContentLoaded', () => {
        advancedTab.classList.add('hidden');
        overviewTabBtn.classList.add('active');
        advancedTabBtn.classList.remove('active');
+       setTimeout(() => {
+         if (genderBarChart) genderBarChart.resize();
+         if (genderPieChart) genderPieChart.resize();
+       }, 100);
      });
 
       advancedTabBtn.addEventListener('click', () => {
