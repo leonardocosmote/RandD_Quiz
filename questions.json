@@ -7,7 +7,7 @@
   },
   {
     "id": 2,
-    "type": "single",
+    "type": "rank",
     "question": "Which technology domain will have the greatest impact on 6G network evolution?",
     "options": [
       "AI-native networking",
@@ -67,7 +67,7 @@
   },
   {
     "id": 7,
-    "type": "single",
+    "type": "rank",
     "question": "Which application area will most strongly drive 6G technology requirements?",
     "options": [
       "Connected and autonomous mobility",
@@ -105,7 +105,7 @@
   },
   {
     "id": 10,
-    "type": "single",
+    "type": "rank",
     "question": "Which challenge is likely to be the biggest obstacle for large-scale 6G deployment?",
     "options": [
       "Energy efficiency",

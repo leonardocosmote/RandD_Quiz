@@ -51,6 +51,34 @@ function extractGenderResponse(answers) {
   return "";
 }
 
+/** Bucket gender free-text / self-describe into chart categories (no detail in aggregates). */
+function normalizeGenderCategory(raw) {
+  if (raw === null || raw === undefined || String(raw).trim() === "") return "No response";
+  var base = String(raw).trim().split(" — ")[0].trim();
+  if (/^woman$/i.test(base)) return "Woman";
+  if (/^man$/i.test(base)) return "Man";
+  if (/non[- ]?binary/i.test(base)) return "Non-binary";
+  if (/prefer not to say/i.test(base)) return "Prefer not to say";
+  if (/self-describe/i.test(base) || /\bother\b/i.test(base)) return "Other";
+  return "Other";
+}
+
+function buildGenderBreakdownFromPlayers(completedPlayers) {
+  var counts = {};
+  var order = ["Woman", "Man", "Non-binary", "Other", "Prefer not to say", "No response"];
+  completedPlayers.forEach(function (p) {
+    var cat = normalizeGenderCategory(p.genderResponse || "");
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  return order
+    .filter(function (label) {
+      return counts[label] > 0;
+    })
+    .map(function (label) {
+      return { label: label, count: counts[label] };
+    });
+}
+
 // Initialize sheet headers if needed (no scoring — poll columns + dedicated gender field)
 function initializeSheet() {
   var sheet = getSheet();
@@ -295,6 +323,7 @@ function doGet(e) {
           topIncomplete: [],
           rawTimestamps: [],
           rawTimestampsIncomplete: [],
+          genderBreakdown: [],
         })
       ).setMimeType(ContentService.MimeType.JSON);
     }
@@ -321,6 +350,7 @@ function doGet(e) {
     var timestampIndex = col["Timestamp"];
     var completedIndex = col["Completed"];
     var answersIndex = col["Answers JSON"];
+    var genderCol = col["Gender response"];
 
     if (nameIndex === undefined) {
       throw new Error("Could not find required column: 'User Name'");
@@ -413,6 +443,13 @@ function doGet(e) {
         } catch (e3) {}
       }
 
+      var genderResponse = "";
+      if (genderCol !== undefined && row[genderCol]) {
+        genderResponse = String(row[genderCol]).trim();
+      } else if (answersArray.length) {
+        genderResponse = extractGenderResponse(answersArray);
+      }
+
       players.push({
         name: name,
         score: scoreLabel,
@@ -423,6 +460,7 @@ function doGet(e) {
         rawTimestamp: rawTimestamp,
         completed: isCompleted,
         answers: answersArray,
+        genderResponse: genderResponse,
       });
     });
 
@@ -457,6 +495,7 @@ function doGet(e) {
       incompleteCount > 0 ? (sumAnsInc / incompleteCount).toFixed(1) : "0";
 
     var averageScore = Number(averageScoreCompleted);
+    var genderBreakdown = buildGenderBreakdownFromPlayers(completedPlayers);
 
     return ContentService.createTextOutput(
       JSON.stringify({
@@ -471,6 +510,7 @@ function doGet(e) {
         topIncomplete: incompletePlayers,
         rawTimestamps: rawTimestamps,
         rawTimestampsIncomplete: rawTimestampsIncomplete,
+        genderBreakdown: genderBreakdown,
       })
     ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
