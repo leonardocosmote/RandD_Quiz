@@ -84,6 +84,13 @@ Open `dashboard/index.html`. It fetches:
 
 Upload at least: `index.html`, `styles.css`, `script.js`, **`questions.json`**, and the `dashboard/` folder if you use the dashboard.
 
+## Local Run
+
+To locally run and test perform the following:
+```bash
+python -m http.server 8080
+```
+
 ## Troubleshooting
 
 - **Questions not loading** — ensure `questions.json` is next to `index.html` and JSON is valid.
